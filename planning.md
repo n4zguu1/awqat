@@ -42,7 +42,7 @@ the base platform this app gonna be developed on is linux platform
 - windows have "Task Scheudling" that will do the word 
 - about macos, i hve no idea, im not installing macos again for this
 
-###CD pipeline
+### CD pipeline
 this is new experience for me.
 CD means Continuous Developement
 
