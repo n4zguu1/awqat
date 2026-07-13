@@ -35,6 +35,7 @@ the base platform this app gonna be developed on is linux platform
 - the tui shows on terminal
 
 ### Architecutal decision 
+**about the calandar values, do we need cash for instant load. or do we calculate on each run?**
 **toml or json for configs?**
 **which crate to use for time algorithms**
 **about the scheduling in different os targets**
@@ -53,9 +54,16 @@ CD means Continuous Developement
 - cargo clippy
 
 ### ratatui
+as we said a background process does the heavy lefting 
+the ratatui is the interface, under our first develeopment cycle, we try to resolve the background process first.
 ### user interface
+the user interface is under assets/TUI_prototype_v1.png
+the only font used is the mono fonts. we choose JetBrains MONO as our champion
+we heavyly inspire the shortcuts and keystrokes from "BTop"
 ### developement flow 
   start normally with implementing the cores to make the MVP, cargo run for feature + simple ci for github pushes-> ship the working project
   implement the CD pipeline and for cross compile all targets -> working  project for all targets
   add curl install for users to install -> installanble project
+
+  
 
