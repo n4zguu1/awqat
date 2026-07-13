@@ -19,8 +19,6 @@ the base platform this app gonna be developed on is linux platform
 - adhkar
 
 
-
-
 ### technical requirements
 - ratatui as terminal tui library
 - salah crate for times algorithms

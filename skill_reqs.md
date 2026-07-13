@@ -1,0 +1,4 @@
+- [ ] understand how terminals work
+- [ ] how to deal with ratatui, how its different from the gui
+- [ ] how to deal with layouts in ratatui, and make the app responsive
+- [ ] how to result the location from IP
