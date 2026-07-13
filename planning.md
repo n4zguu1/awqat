@@ -36,6 +36,7 @@ the base platform this app gonna be developed on is linux platform
 
 ### Architecutal decision 
 **about the calandar values, do we need cash for instant load. or do we calculate on each run?**
+**serialization crate**
 **toml or json for configs?**
 **which crate to use for time algorithms**
 **about the scheduling in different os targets**
