@@ -1,4 +1,5 @@
 mod core;
+mod parser;
 
 use salah::prelude::*;
 
