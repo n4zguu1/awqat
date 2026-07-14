@@ -8,8 +8,9 @@ pub enum ErrorType {
     #[error("The requested date was not found")]
     DateNotFound,
     #[error("Error calculating the prayer time")]
-    PrayerCalculationFailed
-
+    PrayerCalculationFailed,
+    #[error("City was not found")]
+    CityNotFound
 
 }
 #[derive(Serialize, Deserialize)]
@@ -26,6 +27,7 @@ impl Display for DayPrayerEntries {
         todo!()
     }
 }
+#[derive(Serialize, Deserialize)]
 pub struct Location {
     pub latitude: f64,
     pub longitude: f64,
@@ -41,5 +43,3 @@ pub enum Meridiem {
     PM,
 }
 pub struct Config;
-
-
