@@ -1,25 +1,36 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
+use thiserror::Error;
 
-#[derive(Serialize, Deserialize)]
-pub struct DayEntries {
-    fajr: DateTime<Utc>,
-    sunrise: DateTime<Utc>,
-    dhuhr: DateTime<Utc>,
-    asr: DateTime<Utc>,
-    maghreb: DateTime<Utc>,
-    isha: DateTime<Utc>,
+#[derive(Debug, Error)]
+pub enum ErrorType {
+    #[error("The requested date was not found")]
+    DateNotFound,
+    #[error("Error calculating the prayer time")]
+    PrayerCalculationFailed
+
+
 }
-impl Display for DayEntries {
+#[derive(Serialize, Deserialize)]
+pub struct DayPrayerEntries {
+    pub fajr: DateTime<Utc>,
+    pub sunrise: DateTime<Utc>,
+    pub dhuhr: DateTime<Utc>,
+    pub asr: DateTime<Utc>,
+    pub maghrib: DateTime<Utc>,
+    pub isha: DateTime<Utc>,
+}
+impl Display for DayPrayerEntries {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         todo!()
     }
 }
 pub struct Location {
-    latitude: f64,
-    longitude: f64,
+    pub latitude: f64,
+    pub longitude: f64,
 }
+impl Location {}
 pub struct Time {
     hour: u8,
     minute: u8,
@@ -27,5 +38,8 @@ pub struct Time {
 }
 pub enum Meridiem {
     AM,
-    PM
+    PM,
 }
+pub struct Config;
+
+
