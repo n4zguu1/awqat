@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use thiserror::Error;
 
+pub static DATA_BASE_PATH: &str = "data/data.db";
 #[derive(Debug, Error)]
 pub enum ErrorType {
     #[error("The requested date was not found")]
@@ -10,8 +11,15 @@ pub enum ErrorType {
     #[error("Error calculating the prayer time")]
     PrayerCalculationFailed,
     #[error("City was not found")]
-    CityNotFound
-
+    CityNotFound,
+    #[error("Creating temp directory failed")]
+    CreateTmpDirFailed(std::io::Error),
+    #[error("Creating temp file failed")]
+    CreateTmpFileFailed(std::io::Error),
+    #[error("Writing to temp file failed")]
+    WriteTmpFileFailed(std::io::Error),
+    #[error("Flushing the writer failed")]
+    FlushFailed(std::io::Error),
 }
 #[derive(Serialize, Deserialize)]
 pub struct DayPrayerEntries {
