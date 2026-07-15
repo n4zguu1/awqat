@@ -10,6 +10,7 @@ ratatui = "0.30.2"
 rusqlite = "0.40.1"
 salah = "0.7.6"
 serde = { version = "1.0.228", features = ["derive"] }
+tempfile = "3.27.0"
 thiserror = "2.0.18"
 
 [build-dependencies]

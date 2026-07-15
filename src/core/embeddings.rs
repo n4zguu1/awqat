@@ -5,10 +5,10 @@
 // now the operations of database start using that temp file
 // the temp file is automatically wiped each system reboot
 
-use crate::core::types::{ ErrorType, APP_VERSION};
+use crate::core::types::{APP_VERSION, ErrorType};
 use std::fs::{File, OpenOptions, create_dir_all};
 use std::io::{BufWriter, Write};
-use std::path::{Path};
+use std::path::Path;
 // WE COULD USE THE TEMPFILE CRATE AS OUR GO TO TEMP FILE MANAGEMENT TOOL, BUT OUT OF EXPERIENCE , WE TRIED TO "RE-INVENT THE WHEEL"
 // the flow is like this
 // if tmp file exist and app version is same with the one in the file name
@@ -28,16 +28,16 @@ pub fn embed() -> Result<(), ErrorType> {
     writer.flush().map_err(ErrorType::FlushFailed)?;
     Ok(())
 }
-#[cfg(target_os = "linux")]
 fn write_temp() -> Result<Option<BufWriter<File>>, ErrorType> {
-    let base_path = Path::new("/tmp/awqat");
-    let mut file_path = base_path.to_path_buf();
+    let mut base_path = std::env::temp_dir();
+    base_path.push("awqat");
+    let mut file_path = base_path.clone();
     file_path.push(format!("awqat_{}.db", APP_VERSION));
     if file_path.exists() {
         return Ok(None);
     }
     // every Linux distro have /tmp directory
-    let _ = create_dir_all(base_path).map_err(ErrorType::CreateTmpDirFailed)?;
+    create_dir_all(&base_path).map_err(ErrorType::CreateTmpDirFailed)?;
     let file = OpenOptions::new()
         .create(true)
         .truncate(true)
@@ -46,8 +46,4 @@ fn write_temp() -> Result<Option<BufWriter<File>>, ErrorType> {
         .map_err(ErrorType::CreateTmpFileFailed)?;
     let writer = BufWriter::new(file);
     Ok(Some(writer))
-}
-#[cfg(target_os = "windows")]
-fn write_temp() -> Result<BufWriter<File>, ErrorType> {
-    Ok(todo!())
 }

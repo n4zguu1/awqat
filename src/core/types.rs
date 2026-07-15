@@ -1,6 +1,7 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
+use std::path::PathBuf;
 use thiserror::Error;
 
 pub static DATA_BASE_PATH: &str = "data/data.db";
@@ -22,6 +23,8 @@ pub enum ErrorType {
     WriteTmpFileFailed(std::io::Error),
     #[error("Flushing the writer failed")]
     FlushFailed(std::io::Error),
+    #[error("Opening the DB connection failed")]
+    ConnectionOpenFailed(rusqlite::Error),
 }
 #[derive(Serialize, Deserialize)]
 pub struct DayPrayerEntries {
