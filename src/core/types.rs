@@ -4,6 +4,8 @@ use std::fmt::{Display, Formatter};
 use thiserror::Error;
 
 pub static DATA_BASE_PATH: &str = "data/data.db";
+pub static APP_VERSION: &str = env!("CARGO_PKG_VERSION");
+
 #[derive(Debug, Error)]
 pub enum ErrorType {
     #[error("The requested date was not found")]

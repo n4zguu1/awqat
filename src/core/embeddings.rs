@@ -5,36 +5,47 @@
 // now the operations of database start using that temp file
 // the temp file is automatically wiped each system reboot
 
-use crate::core::types::{DATA_BASE_PATH, ErrorType};
-use chrono::{DateTime, Utc};
-use std::error::Error;
+use crate::core::types::{ ErrorType, APP_VERSION};
 use std::fs::{File, OpenOptions, create_dir_all};
 use std::io::{BufWriter, Write};
-
+use std::path::{Path};
+// WE COULD USE THE TEMPFILE CRATE AS OUR GO TO TEMP FILE MANAGEMENT, BUT OUT OF EXPERIENCE , WE TRIED TO "RE-INVENT THE WHEEL"
+// the flow is like this
+// if tmp file exist and app version is same with the one in the file name
+// we use that file directly no io operations
+// if file doesnt exist or version is different , we write new file
 pub fn embed() -> Result<(), ErrorType> {
     let bytes = include_bytes!("../../data/data.db");
-    let mut writer = write_temp()?;
+
+    let mut writer = if let Some(writer) = write_temp()? {
+        writer
+    } else {
+        return Ok(());
+    };
     writer
         .write_all(bytes)
         .map_err(ErrorType::WriteTmpFileFailed)?;
     writer.flush().map_err(ErrorType::FlushFailed)?;
-
     Ok(())
 }
 #[cfg(target_os = "linux")]
-fn write_temp() -> Result<BufWriter<File>, ErrorType> {
-    // every linux distro have /tmp directory
-    let _ = create_dir_all("/tmp/awqat").map_err(ErrorType::CreateTmpDirFailed)?;
-    let timestamp = Utc::now().timestamp();
-    let filename = format!("/tmp/awqat/awqat_{}.db", timestamp);
+fn write_temp() -> Result<Option<BufWriter<File>>, ErrorType> {
+    let base_path = Path::new("/tmp/awqat");
+    let mut file_path = base_path.to_path_buf();
+    file_path.push(format!("awqat_{}.db", APP_VERSION));
+    if file_path.exists() {
+        return Ok(None);
+    }
+    // every Linux distro have /tmp directory
+    let _ = create_dir_all(base_path).map_err(ErrorType::CreateTmpDirFailed)?;
     let file = OpenOptions::new()
         .create(true)
         .truncate(true)
         .write(true)
-        .open(filename)
+        .open(file_path)
         .map_err(ErrorType::CreateTmpFileFailed)?;
     let writer = BufWriter::new(file);
-    Ok(writer)
+    Ok(Some(writer))
 }
 #[cfg(target_os = "windows")]
 fn write_temp() -> Result<BufWriter<File>, ErrorType> {

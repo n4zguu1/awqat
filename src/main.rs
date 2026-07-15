@@ -1,9 +1,9 @@
 use crate::core::embeddings::embed;
-use crate::core::types::DATA_BASE_PATH;
+use crate::core::types::{ErrorType};
 
 mod core;
 mod ui;
 
-fn main() {
-    embed();
+fn main() -> Result<(), ErrorType> {
+    Ok(())
 }
