@@ -1,10 +1,10 @@
 use chrono::{DateTime, Utc};
+use salah::{Madhab, Method};
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use std::path::PathBuf;
 use thiserror::Error;
 
-pub static DATA_BASE_PATH: &str = "data/data.db";
 pub static APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Debug, Error)]
@@ -40,7 +40,7 @@ impl Display for DayPrayerEntries {
         todo!()
     }
 }
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq)]
 pub struct Location {
     pub latitude: f64,
     pub longitude: f64,
@@ -55,4 +55,15 @@ pub enum Meridiem {
     AM,
     PM,
 }
-pub struct Config;
+#[derive(PartialEq)]
+pub struct Angles {
+   pub fajr: f64,
+   pub isha: f64,
+}
+#[derive(PartialEq)]
+pub struct Params {
+    pub madhab: Madhab,
+    pub method: Method,
+    pub coordinates: Location,
+    pub angles: Angles,
+}
