@@ -5,29 +5,17 @@ use thiserror::Error;
 
 pub static APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 
-
-
 #[derive(Serialize, Deserialize, PartialEq)]
 pub struct Coordinates {
     pub latitude: f64,
     pub longitude: f64,
 }
 
-// AM/PM based
-pub struct Time {
-    hour: u8,
-    minute: u8,
-    second: u8,
-    meridiem: Meridiem,
-}
-pub enum Meridiem {
-    AM,
-    PM,
-}
+
 #[derive(PartialEq)]
 pub struct Angles {
-    pub fajr: Option<f64>,
-    pub isha: Option<f64>,
+    pub fajr: f64,
+    pub isha: f64,
 }
 pub struct City {
     pub name: String,
@@ -92,12 +80,11 @@ impl Data {
     }
 }
 
-
 #[cfg(test)]
 pub mod tests {
     use crate::core::types::Timezone;
     #[test]
-    pub fn test_gmt_name() {
+    pub fn gmt_name() {
         let timezone = Timezone::new("Central Standard Time (North America", -21600);
         let timezone2 = Timezone::new("Central Standard Time (North America", 16200);
         assert_eq!(timezone.gmt_name(), "UTC-06:00".to_string());

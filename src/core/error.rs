@@ -1,3 +1,4 @@
+use icu_calendar::RangeError;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -20,4 +21,8 @@ pub enum ErrorType {
     ConnectionOpenFailed(rusqlite::Error),
     #[error("Rusqlite Operation failed")]
     SqliteOperationFailed(rusqlite::Error),
+    #[error("Failed to initialize Hijri Date instance.")]
+    HijriDateInitializationFailed(RangeError),
+    #[error("Calculating prayer times failed.")]
+    CalculatingPrayerTimesFailed(String),
 }

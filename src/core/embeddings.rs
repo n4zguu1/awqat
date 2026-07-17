@@ -16,7 +16,7 @@ use crate::core::error::ErrorType;
 // we use that file directly no io operations
 // if file doesnt exist or version is different , we write new file
 pub fn embed() -> Result<(), ErrorType> {
-    let bytes = include_bytes!("../../data/data.db");
+    let bytes = include_bytes!("../../data/awqat.db");
 
     let mut writer = if let Some(writer) = write_temp()? {
         writer
