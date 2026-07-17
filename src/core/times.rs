@@ -1,15 +1,13 @@
-use crate::core::types::{DayPrayerEntries, ErrorType, Location, Params};
+use crate::core::types::{Data, DayPrayerEntries, ErrorType, MetaData};
 use chrono::{DateTime, Utc};
 use salah::{Configuration, Coordinates, Madhab, Method, Prayer, PrayerSchedule};
 
 fn get_time_now() -> DateTime<Utc> {
     Utc::now()
 }
-fn get_madhab(location: Location) {}
-fn get_method(location: Location) {}
 pub fn calculate_prayer_times(
     date_time: DateTime<Utc>,
-    params: Params,
+    params: MetaData,
 ) -> Result<DayPrayerEntries, ErrorType> {
     let city = Coordinates::new(params.coordinates.latitude, params.coordinates.longitude);
     let params = if params.method == Method::Other {
@@ -47,7 +45,6 @@ pub fn calculate_prayer_times(
 #[cfg(test)]
 mod test {
     use crate::core::times::{calculate_prayer_times, get_time_now};
-    use crate::core::types::Location;
     use salah::{Madhab, Method};
 
     fn test_calculate_prayer_times() {}

@@ -3,6 +3,7 @@ use crate::core::types::ErrorType;
 
 mod core;
 mod ui;
+mod parser;
 
 fn main() -> Result<(), ErrorType> {
     connection()?;

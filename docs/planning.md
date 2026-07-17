@@ -49,7 +49,7 @@ CD means Continuous Developement
 
 ### CI pipeline
 - cargo check
-- cargo test
+- cargo test[..](..)
 - cargo clippy
 
 ### ratatui

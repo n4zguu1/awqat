@@ -1,7 +1,7 @@
-use crate::core::types::Location;
-use rusqlite::Connection;
+use crate::core::types::{ErrorType};
+use rusqlite::{Connection, params};
 
 // from a table index , we choose
-fn manual_lookup(conn: &Connection, city: &str) -> Result<Location, ()> {
-    Ok(todo!())
-}
+// the automated way isnt accurate, 70% of the time delivers not accurate city location. Although, we can use this to improve the UX
+// we can let the lookup do decrease the search scope for country selection (supposing the full db search has speed penalty)
+// in that manner we just show the cities under that country
