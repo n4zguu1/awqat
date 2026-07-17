@@ -1,2 +1,4 @@
 - [ ] rework on the core types
 - [ ] reconstruct the dataset to contain the region
+- [ ] some calculations methods doesn require angles, instead it uses a fixed timestamp , like oumalqura , isha time is after 60min, in certain month(ramadan) it uses 120 min 
+- 

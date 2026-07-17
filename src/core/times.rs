@@ -1,6 +1,6 @@
-use crate::core::types::{Data, DayPrayerEntries, ErrorType, MetaData};
+use crate::core::types::{DayPrayerEntries, ErrorType, MetaData};
 use chrono::{DateTime, Utc};
-use salah::{Configuration, Coordinates, Madhab, Method, Prayer, PrayerSchedule};
+use salah::{Configuration, Coordinates, Method, Prayer, PrayerSchedule};
 
 fn get_time_now() -> DateTime<Utc> {
     Utc::now()
@@ -11,7 +11,9 @@ pub fn calculate_prayer_times(
 ) -> Result<DayPrayerEntries, ErrorType> {
     let city = Coordinates::new(params.coordinates.latitude, params.coordinates.longitude);
     let params = if params.method == Method::Other {
-        Configuration::new(params.angles.fajr, params.angles.isha).done()
+        let fajr = params.angles.fajr.unwrap_or(0.0);
+        let isha = params.angles.isha.unwrap_or(0.0);
+        Configuration::new(fajr, isha).done()
     } else {
         Configuration::with(params.method, params.madhab)
     };

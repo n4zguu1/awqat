@@ -54,8 +54,8 @@ pub enum Meridiem {
 }
 #[derive(PartialEq)]
 pub struct Angles {
-    pub fajr: f64,
-    pub isha: f64,
+    pub fajr: Option<f64>,
+    pub isha: Option<f64>,
 }
 pub struct City {
     pub name: String,
