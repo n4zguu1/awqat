@@ -1,5 +1,6 @@
 use crate::core::embeddings::embed;
-use crate::core::types::{APP_VERSION, ErrorType};
+use crate::core::error::ErrorType;
+use crate::core::types::APP_VERSION;
 use rusqlite::Connection;
 
 pub fn connection() -> Result<Connection, ErrorType> {
@@ -12,4 +13,3 @@ pub fn connection() -> Result<Connection, ErrorType> {
     let conn = Connection::open(&temp_file_path).map_err(ErrorType::ConnectionOpenFailed)?;
     Ok(conn)
 }
-

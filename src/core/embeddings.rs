@@ -5,9 +5,11 @@
 // now the operations of database start using that temp file
 // the temp file is automatically wiped each system reboot
 
-use crate::core::types::{APP_VERSION, ErrorType};
+use crate::core::types::{APP_VERSION};
 use std::fs::{File, OpenOptions, create_dir_all};
 use std::io::{BufWriter, Write};
+use crate::core::error::ErrorType;
+
 // WE COULD USE THE TEMPFILE CRATE AS OUR GO TO TEMP FILE MANAGEMENT TOOL, BUT OUT OF EXPERIENCE , WE TRIED TO "RE-INVENT THE WHEEL"
 // the flow is like this
 // if tmp file exist and app version is same with the one in the file name

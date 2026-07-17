@@ -1,5 +1,5 @@
 use crate::core::db_connection::connection;
-use crate::core::types::ErrorType;
+use crate::core::error::ErrorType;
 
 mod core;
 mod ui;
