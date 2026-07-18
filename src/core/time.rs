@@ -1,6 +1,6 @@
 // handle all logic related to time unit
 
-use crate::core::date::hijri_date_oumalqura;
+use crate::core::date::HijriDate;
 use crate::core::error::ErrorType;
 use crate::core::types::{Angles, Data};
 use chrono::{DateTime, Utc};
@@ -30,9 +30,9 @@ impl PrayerData {
         // special case for UmmAlQura method , where they calculate isha time little different based on Islamic month
         // the method uses fixed time interval between maghreb and isha, where in ramadan isha = maghreb + 120 min. in other months isha= maghreb + 90
         // the lib already calcualates the addjustment on other months, we need ajustement for ramadan
-        let date = hijri_date_oumalqura(utc.date_naive())?;
+        let date = HijriDate::from_gregorian_to_ummalqura(utc.date_naive())?;
         // explicitly adjust for Ramadan
-        let params = if date.month().ordinal == 9 && self.method == Method::UmmAlQura {
+        let params = if date.ordinal == 9 && self.method == Method::UmmAlQura {
             // special case for isha, +30 min then the usual
             let adjustment = TimeAdjustment {
                 isha: 30,

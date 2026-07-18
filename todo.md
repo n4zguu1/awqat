@@ -3,3 +3,4 @@
 - [ ] some calculations methods doesn require angles, instead it uses a fixed timestamp , like oumalqura , isha time is after 60min, in certain month(ramadan) it uses 120 min 
 - [ ] the dataset i hve mightbe inaccurate for some people, if so, create a issue template for people to help identifying errors
 - [ ] a fallback mechanism for months like ramadan, to make the calandar accurate for user.
+- [ ] a propper DB indexing, cuz its over 150,664 rows
