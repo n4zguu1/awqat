@@ -32,7 +32,7 @@ impl PrayerData {
         // the lib already calcualates the addjustment on other months, we need ajustement for ramadan
         let date = HijriDate::from_gregorian_to_ummalqura(utc.date_naive())?;
         // explicitly adjust for Ramadan
-        let params = if date.ordinal == 9 && self.method == Method::UmmAlQura {
+        let params = if date.month == 9 && self.method == Method::UmmAlQura {
             // special case for isha, +30 min then the usual
             let adjustment = TimeAdjustment {
                 isha: 30,

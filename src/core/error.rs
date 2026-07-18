@@ -16,7 +16,7 @@ pub enum ErrorType {
     #[error("Writing to temp file failed")]
     WriteTmpFileFailed(std::io::Error),
     #[error("Flushing the writer failed")]
-    FlushFailed(std::io::Error),
+    FlushFaTiled(std::io::Error),
     #[error("Opening the DB connection failed")]
     ConnectionOpenFailed(rusqlite::Error),
     #[error("Rusqlite Operation failed")]
@@ -25,4 +25,8 @@ pub enum ErrorType {
     HijriDateInitializationFailed(RangeError),
     #[error("Calculating prayer times failed.")]
     CalculatingPrayerTimesFailed(String),
+    #[error("Days can only in range 1-30")]
+    DayParamError,
+    #[error("Months can only in range 1-12")]
+    MonthParamError,
 }

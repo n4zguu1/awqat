@@ -31,6 +31,25 @@ pub enum HijriMonths {
     DhuAlQadah,
     DhuAlHijjah,
 }
+impl HijriMonths {
+    pub fn from_number(month: u8) -> Self {
+        match month {
+            1 => HijriMonths::Muharram,
+            2 => HijriMonths::Safar,
+            3 => HijriMonths::RabiAlAwwal,
+            4 => HijriMonths::RabiAlThani,
+            5 => HijriMonths::JumadaAlAwwal,
+            6 => HijriMonths::JumadaAlThani,
+            7 => HijriMonths::Rajab,
+            8 => HijriMonths::Shaban,
+            9 => HijriMonths::Ramadan,
+            10 => HijriMonths::Shawwal,
+            11 => HijriMonths::DhuAlQadah,
+            12 => HijriMonths::DhuAlHijjah,
+            _ => unreachable!("a year can have only 12 months"),
+        }
+    }
+}
 
 impl Display for HijriMonths {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -54,16 +73,33 @@ impl Display for HijriMonths {
 
 pub struct HijriDate {
     pub year: i32,
-    pub month: HijriMonths,
-    pub ordinal: u8,
+    pub month_name: HijriMonths,
+    pub month: u8,
     pub day: u8,
 }
 impl Display for HijriDate {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} {} {}", self.day, self.month, self.year)
+        write!(f, "{} {} {}", self.day, self.month_name, self.year)
     }
 }
+
+// todo: the hijri date doesn work on before hijrah, it delivers wrong dates.
 impl HijriDate {
+    // before Hijrah years are prefixed by '-'
+    pub fn new(year: i32, month: u8, day: u8) -> Result<Self, ErrorType> {
+        if month > 12 || month < 1 {
+            return Err(ErrorType::MonthParamError);
+        } else if day > 30 || day < 1 {
+            return Err(ErrorType::DayParamError);
+        }
+        let month_name = HijriMonths::from_number(month);
+        Ok(HijriDate {
+            month,
+            year,
+            day,
+            month_name,
+        })
+    }
     pub fn to_numeric(&self) -> NumericHijriDate {
         NumericHijriDate(self)
     }
@@ -81,33 +117,19 @@ impl HijriDate {
         let year = date.year().era_year_or_related_iso();
         let month = date.month().ordinal;
         let day = date.day_of_month().0;
-        let month_name = match month {
-            1 => HijriMonths::Muharram,
-            2 => HijriMonths::Safar,
-            3 => HijriMonths::RabiAlAwwal,
-            4 => HijriMonths::RabiAlThani,
-            5 => HijriMonths::JumadaAlAwwal,
-            6 => HijriMonths::JumadaAlThani,
-            7 => HijriMonths::Rajab,
-            8 => HijriMonths::Shaban,
-            9 => HijriMonths::Ramadan,
-            10 => HijriMonths::Shawwal,
-            11 => HijriMonths::DhuAlQadah,
-            12 => HijriMonths::DhuAlHijjah,
-            _ => unreachable!("a year can have only 12 months"),
-        };
+        let month_name = HijriMonths::from_number(month);
         Ok(HijriDate {
             year,
-            ordinal: month,
+            month,
             day,
-            month: month_name,
+            month_name,
         })
     }
 }
 pub struct NumericHijriDate<'a>(&'a HijriDate);
 impl<'a> Display for NumericHijriDate<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}-{}-{}", self.0.day, self.0.ordinal, self.0.year)
+        write!(f, "{}-{}-{}", self.0.day, self.0.month, self.0.year)
     }
 }
 
@@ -119,7 +141,7 @@ mod tests {
     #[test]
     pub fn ummalqura_hijri_date() {
         let hijri =
-            HijriDate::from_gregorian_to_ummalqura(NaiveDate::from_ymd_opt(600, 2, 1).unwrap())
+            HijriDate::from_gregorian_to_ummalqura(NaiveDate::from_ymd_opt(700, 2, 1).unwrap())
                 .unwrap();
         // Extract numerical representations
         println!("{}", hijri)
