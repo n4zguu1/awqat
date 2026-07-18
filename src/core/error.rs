@@ -29,4 +29,6 @@ pub enum ErrorType {
     DayParamError,
     #[error("Months can only in range 1-12")]
     MonthParamError,
+    #[error("Duplicate Key inserted to hashmap")]
+    HashmapDuplicateError,
 }

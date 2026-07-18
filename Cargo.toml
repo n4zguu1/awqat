@@ -8,7 +8,7 @@ chrono = { version = "0.4.45", features = ["serde"] }
 crossterm = "0.29.0"
 icu_calendar = "2.2.1"
 ratatui = "0.30.2"
-rusqlite = "0.40.1"
+rusqlite = { version = "0.40.1", features = ["bundled"] }
 salah = "0.7.6"
 serde = { version = "1.0.228", features = ["derive"] }
 thiserror = "2.0.18"

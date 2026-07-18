@@ -4,3 +4,5 @@
 - [ ] the dataset i hve mightbe inaccurate for some people, if so, create a issue template for people to help identifying errors
 - [ ] a fallback mechanism for months like ramadan, to make the calandar accurate for user.
 - [ ] a propper DB indexing, cuz its over 150,664 rows
+- [ ] improve the database to contains more precise cities,
+- [ ] add heuristics to find neighbor cities to select in search results
