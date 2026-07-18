@@ -14,8 +14,7 @@ use crate::core::error::ErrorType;
 use chrono::{Datelike, NaiveDate};
 use icu_calendar::Date;
 use icu_calendar::cal::Hijri;
-use icu_calendar::cal::hijri::UmmAlQura;
-use std::fmt::{Display, Formatter, write};
+use std::fmt::{Display, Formatter};
 
 pub enum HijriMonths {
     Muharram,
@@ -141,10 +140,10 @@ mod tests {
     #[test]
     pub fn ummalqura_hijri_date() {
         let hijri =
-            HijriDate::from_gregorian_to_ummalqura(NaiveDate::from_ymd_opt(700, 2, 1).unwrap())
+            HijriDate::from_gregorian_to_ummalqura(NaiveDate::from_ymd_opt(2014, 2, 1).unwrap())
                 .unwrap();
-        // Extract numerical representations
-        println!("{}", hijri)
-        // assert_eq!(hijri_str, "1/4/1435");
+        let hijri_numeric = hijri.to_numeric();
+
+        assert_eq!(format!("{}", hijri_numeric), "1-4-1435");
     }
 }

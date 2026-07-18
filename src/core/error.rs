@@ -16,7 +16,7 @@ pub enum ErrorType {
     #[error("Writing to temp file failed")]
     WriteTmpFileFailed(std::io::Error),
     #[error("Flushing the writer failed")]
-    FlushFaTiled(std::io::Error),
+    FlushFailed(std::io::Error),
     #[error("Opening the DB connection failed")]
     ConnectionOpenFailed(rusqlite::Error),
     #[error("Rusqlite Operation failed")]
