@@ -10,6 +10,6 @@ pub fn connection() -> Result<Connection, ErrorType> {
     temp_file_path.push("awqat");
     temp_file_path.push(file_name);
     println!("{:?}", temp_file_path.to_str());
-    let conn = Connection::open(&temp_file_path).map_err(ErrorType::ConnectionOpenFailed)?;
+    let conn = Connection::open(&temp_file_path).map_err(ErrorType::SqliteConnectionOpenFailed)?;
     Ok(conn)
 }

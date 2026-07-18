@@ -1,6 +1,5 @@
 // the flow is like this
-// build pareses the json dataset then produce the sqlite DB
-// the compile time , uses that db and embed it on the binary itself
+// the compile time , embed db on the binary itself
 // the runtime , uses that embeddings and write down temp file on it proper directories on the target os
 // now the operations of database start using that temp file
 // the temp file is automatically wiped each system reboot
@@ -16,6 +15,7 @@ use crate::core::error::ErrorType;
 // we use that file directly no io operations
 // if file doesnt exist or version is different , we write new file
 pub fn embed() -> Result<(), ErrorType> {
+    // embed the db into the binary
     let bytes = include_bytes!("../../data/awqat.db");
 
     let mut writer = if let Some(writer) = write_temp()? {

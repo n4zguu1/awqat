@@ -25,7 +25,7 @@ impl PrayerData {
         }
     }
     // handle the specific cases
-    // todo: the calculations are based on the sun hitting specif angles, some places sun never goes down. we need to cover those in feature versions
+    // todo: the calculations are based on the sun hitting specif angles. some places, sun never goes down. we need to cover those in feature versions
     pub fn calculate_prayer_times(&self, utc: &DateTime<Utc>) -> Result<PrayerTimes, ErrorType> {
         // special case for UmmAlQura method , where they calculate isha time little different based on Islamic month
         // the method uses fixed time interval between maghreb and isha, where in ramadan isha = maghreb + 120 min. in other months isha= maghreb + 90

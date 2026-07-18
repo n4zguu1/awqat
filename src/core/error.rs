@@ -18,7 +18,7 @@ pub enum ErrorType {
     #[error("Flushing the writer failed")]
     FlushFailed(std::io::Error),
     #[error("Opening the DB connection failed")]
-    ConnectionOpenFailed(rusqlite::Error),
+    SqliteConnectionOpenFailed(rusqlite::Error),
     #[error("Rusqlite Operation failed")]
     SqliteOperationFailed(rusqlite::Error),
     #[error("Failed to initialize Hijri Date instance.")]
