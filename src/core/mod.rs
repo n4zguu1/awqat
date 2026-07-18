@@ -1,5 +1,5 @@
 pub mod types;
-mod time;
+pub mod time;
 pub mod search;
 pub mod storage;
 pub mod embeddings;

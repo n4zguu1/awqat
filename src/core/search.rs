@@ -7,8 +7,10 @@
 // the duplicates, what if there is two cities named with same name
 
 use crate::core::error::ErrorType;
-use crate::core::types::Data;
+use crate::core::types::{City, Coordinates, Country, Data, Region, Timezone};
+use crossterm::event::KeyCode::PageDown;
 use rusqlite::{Connection, params};
+use salah::{Madhab, Method};
 use std::collections::HashMap;
 // we use FTS5 , found out that rusqlite supports it out of the box
 // DEFINITION:
@@ -16,7 +18,7 @@ use std::collections::HashMap;
 // the overhead it cuzes is it doubles down the binary size
 // slower writes and updates, cuz each update the table needs to update too
 
-pub fn search_city(conn: Connection, name: &str) -> Result<HashMap<i64, String>, ErrorType> {
+pub fn search_city(conn: &Connection, name: &str) -> Result<HashMap<i64, String>, ErrorType> {
     let query = "select rowid,name from cities_fts where name match ?1";
     let mut statement = conn
         .prepare(query)
@@ -40,7 +42,60 @@ pub fn search_city(conn: Connection, name: &str) -> Result<HashMap<i64, String>,
 
     Ok(hashmap)
 }
-pub fn select_city(id: i64) -> Result<Data, ErrorType> {
+// build the Data struct
+pub fn selected_city(id: i64, conn: &Connection) -> Result<Data, ErrorType> {
+    let sql = "
+        SELECT
+            ci.Name, ci.Latitude, ci.Longitude, ci.GmtOffset,
+            r.Name,
+            co.Iso2, co.Name, co.Method, co.Madhab
+        FROM Cities ci
+        JOIN Regions r    ON ci.RegionId  = r.Id
+        JOIN Countries co ON r.CountryId  = co.Id
+        WHERE ci.Id = ?1
+    ";
 
-    Ok(todo!())
+    let (city_name, lat, lon, gmt, region_name, iso2, country_name, method_str, madhab_str) = conn
+        .query_row(sql, params![id], |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, f64>(1)?,
+                row.get::<_, f64>(2)?,
+                row.get::<_, i64>(3)?,
+                row.get::<_, String>(4)?,
+                row.get::<_, String>(5)?,
+                row.get::<_, String>(6)?,
+                row.get::<_, String>(7)?,
+                row.get::<_, String>(8)?,
+            ))
+        })
+        .map_err(ErrorType::SqliteOperationFailed)?;
+
+    let madhab = match madhab_str.as_str() {
+        "Hanafi" => Madhab::Hanafi,
+        "Shafi" => Madhab::Shafi,
+        other => return Err(ErrorType::UnknownMadhab(other.to_string())),
+    };
+
+    let method = match method_str.as_str() {
+        "MuslimWorldLeague" => Method::MuslimWorldLeague,
+        "Egyptian" => Method::Egyptian,
+        "Karachi" => Method::Karachi,
+        "UmmAlQura" => Method::UmmAlQura,
+        "Dubai" => Method::Dubai,
+        "MoonsightingCommittee" => Method::MoonsightingCommittee,
+        "NorthAmerica" => Method::NorthAmerica,
+        "Kuwait" => Method::Kuwait,
+        "Qatar" => Method::Qatar,
+        "Singapore" => Method::Singapore,
+        "Tehran" => Method::Tehran,
+        "Turkey" => Method::Turkey,
+        other => return Err(ErrorType::UnknownMethod(other.to_string())),
+    };
+
+    let city = City::new(city_name, Coordinates::new(lat, lon), Timezone::new(gmt));
+    let region = Region::new(region_name);
+    let country = Country::new(iso2, country_name, madhab, method);
+
+    Ok(Data::new(country, region, city))
 }

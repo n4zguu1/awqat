@@ -31,4 +31,8 @@ pub enum ErrorType {
     MonthParamError,
     #[error("Duplicate Key inserted to hashmap")]
     HashmapDuplicateError,
+    #[error("Unknown madhab")]
+    UnknownMadhab(String),
+    #[error("Unknown method")]
+    UnknownMethod(String),
 }

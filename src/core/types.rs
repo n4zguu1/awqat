@@ -13,24 +13,65 @@ pub struct Data {
 pub struct Country {
     pub iso2: String, // unique id
     pub name: String,
-    pub native: String,
     pub madhab: Madhab,
     pub method: Method,
-    pub angles: Angles,
 }
+
+impl Country {
+    pub fn new(
+        iso2: String,
+        name: String,
+        madhab: Madhab,
+        method: Method,
+    ) -> Self {
+        Self {
+            iso2,
+            name,
+            madhab,
+            method,
+        }
+    }
+}
+
 pub struct Region {
     pub name: String,
 }
+
+impl Region {
+    pub fn new(name: String) -> Self {
+        Self { name }
+    }
+}
+
 pub struct City {
     pub name: String,
     pub coordinates: Coordinates,
     pub timezone: Timezone,
 }
 
+impl City {
+    pub fn new( name: String, coordinates: Coordinates, timezone: Timezone) -> Self {
+        Self {
+            name,
+            coordinates,
+            timezone,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, PartialEq)]
 pub struct Coordinates {
     pub latitude: f64,
     pub longitude: f64,
+}
+
+impl Coordinates {
+    pub fn new(latitude: f64, longitude: f64) -> Self {
+        Self {
+            latitude,
+            longitude,
+        }
+    }
 }
 
 #[derive(PartialEq)]
@@ -40,15 +81,11 @@ pub struct Angles {
 }
 
 pub struct Timezone {
-    tz_name: String, // Atlantic Standard Time
     gmt_offset: i64,
 }
 impl Timezone {
-    pub fn new(name: &str, offset: i64) -> Self {
-        Timezone {
-            tz_name: name.to_string(),
-            gmt_offset: offset,
-        }
+    pub fn new(offset: i64) -> Self {
+        Timezone { gmt_offset: offset }
     }
     pub fn to_gmt_format(&self) -> String {
         let is_negative = self.gmt_offset < 0;
@@ -83,8 +120,8 @@ pub mod tests {
     use crate::core::types::Timezone;
     #[test]
     pub fn gmt_name() {
-        let timezone = Timezone::new("Central Standard Time (North America", -21600);
-        let timezone2 = Timezone::new("Central Standard Time (North America", 16200);
+        let timezone = Timezone::new(-21600);
+        let timezone2 = Timezone::new(16200);
         assert_eq!(timezone.to_gmt_format(), "UTC-06:00".to_string());
         assert_eq!(timezone2.to_gmt_format(), "UTC+04:30".to_string())
     }
