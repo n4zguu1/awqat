@@ -38,5 +38,5 @@ pub enum ErrorType {
     #[error("Installing color eyer failed")]
     ColorEyreInstallationFailed(color_eyre::Report),
     #[error("io operation failed")]
-    IOError(std::io::Error),
+    IOError(#[from] std::io::Error),
 }
