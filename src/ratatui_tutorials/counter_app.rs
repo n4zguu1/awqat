@@ -14,15 +14,22 @@ use ratatui::{DefaultTerminal, Frame};
 // run the app loop
 // restore the app to its original state
 pub fn counter_app() -> Result<(), ErrorType> {
+    // the run app
+    // this function initiate the terminal, enables raw mode and do other stuff,  accepts terminals as param
     ratatui::run(|terminal| App::default().run(terminal))
 }
 #[derive(Debug, Default)]
+// Default attributes assigne default values to fields, like exit to false, counter to zero
+// the struct define the states that gonna change over frames
 pub struct App {
     counter: u8,
     exit: bool,
 }
 impl App {
+    // the event loop with it we decide the logic of our app
+    // accepts terminal as its params
     pub fn run(&mut self, terminal: &mut DefaultTerminal) -> Result<(), ErrorType> {
+        // loop
         while !self.exit {
             terminal
                 .draw(|frame| self.draw(frame))
@@ -31,6 +38,7 @@ impl App {
         }
         Ok(())
     }
+    // what to draw in the frame, we implemeted a widget trait ,
     fn draw(&self, frame: &mut Frame) {
         frame.render_widget(self, frame.area())
     }

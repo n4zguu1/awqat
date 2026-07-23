@@ -6,3 +6,4 @@
 - [ ] a propper DB indexing, cuz its over 150,664 rows
 - [ ] improve the database to contains more precise cities,
 - [ ] add heuristics to find neighbor cities to select in search results
+- [ ] in later version, we should support color pallets of the os, like btop where on omarchy, the ui adapts
