@@ -1,8 +1,8 @@
 // handle all logic related to time unit
 
 use crate::core::date::HijriDate;
-use crate::core::error::ErrorType;
-use crate::core::types::{Angles, Data};
+use crate::error::ErrorType;
+use crate::core::types::{ Data};
 use chrono::{DateTime, Utc};
 use salah::{
     Configuration, Coordinates, Madhab, Method, PrayerSchedule, PrayerTimes, TimeAdjustment,
@@ -53,6 +53,7 @@ impl PrayerData {
             .map_err(ErrorType::CalculatingPrayerTimesFailed)?;
         Ok(prayer_times)
     }
+
 }
 enum DisplayMode {
     All,

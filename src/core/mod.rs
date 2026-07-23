@@ -3,5 +3,4 @@ pub mod time;
 pub mod search;
 pub mod storage;
 pub mod embeddings;
-pub mod error;
-mod date;
+pub mod date;

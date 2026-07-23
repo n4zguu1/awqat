@@ -10,7 +10,7 @@
 // approach three:
 // make the user mannual configure the hijri date based on local data
 
-use crate::core::error::ErrorType;
+use crate::error::ErrorType;
 use chrono::{Datelike, NaiveDate};
 use icu_calendar::Date;
 use icu_calendar::cal::Hijri;

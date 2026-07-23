@@ -35,4 +35,8 @@ pub enum ErrorType {
     UnknownMadhab(String),
     #[error("Unknown method")]
     UnknownMethod(String),
+    #[error("Installing color eyer failed")]
+    ColorEyreInstallationFailed(color_eyre::Report),
+    #[error("io operation failed")]
+    IOError(std::io::Error),
 }

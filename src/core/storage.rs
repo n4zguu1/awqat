@@ -1,5 +1,5 @@
 use crate::core::embeddings::embed;
-use crate::core::error::ErrorType;
+use crate::error::ErrorType;
 use crate::core::types::APP_VERSION;
 use rusqlite::Connection;
 

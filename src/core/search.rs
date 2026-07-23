@@ -6,9 +6,8 @@
 // there is some issue to address
 // the duplicates, what if there is two cities named with same name
 
-use crate::core::error::ErrorType;
+use crate::error::ErrorType;
 use crate::core::types::{City, Coordinates, Country, Data, Region, Timezone};
-use crossterm::event::KeyCode::PageDown;
 use rusqlite::{Connection, params};
 use salah::{Madhab, Method};
 use std::collections::HashMap;
