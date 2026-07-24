@@ -36,7 +36,8 @@ pub enum ErrorType {
     #[error("Unknown method")]
     UnknownMethod(String),
     #[error("Installing color eyer failed")]
-    ColorEyreInstallationFailed(color_eyre::Report),
+    ColorEyreOperationFailed(color_eyre::Report),
     #[error("io operation failed")]
     IOError(#[from] std::io::Error),
+
 }

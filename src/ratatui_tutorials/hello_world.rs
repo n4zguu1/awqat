@@ -4,7 +4,7 @@ use ratatui::{DefaultTerminal, Frame};
 
 pub fn hello_world() -> Result<(), ErrorType> {
     // this helps us display error in nice formatings
-    color_eyre::install().map_err(ErrorType::ColorEyreInstallationFailed)?;
+    color_eyre::install().map_err(ErrorType::ColorEyreOperationFailed)?;
     // main entry point , where we call our run function to run event loop
     ratatui::run(app).map_err(ErrorType::IOError)?;
     Ok(())
