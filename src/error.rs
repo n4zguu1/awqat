@@ -39,5 +39,10 @@ pub enum ErrorType {
     ColorEyreOperationFailed(color_eyre::Report),
     #[error("io operation failed")]
     IOError(#[from] std::io::Error),
-
+    #[error("serde serialize operation failed")]
+    SerializeError(serde_json::Error),
+    #[error("serde deserialize operation failed")]
+    DeserializeError(serde_json::Error),
+    #[error("failed to get the config directory")]
+    ConfigDirError,
 }

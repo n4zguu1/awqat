@@ -1,40 +1,9 @@
-use ratatui::backend::CrosstermBackend;
-use ratatui::Terminal;
-use crate::ui::app::App;
-use crate::ui::event::{Event, EventHandler};
-use crate::ui::tui::Tui;
-use crate::ui::update::update;
-use color_eyre::Result;
-// ANCHOR: imports_main
-// ANCHOR: declare_mods
+use crate::core::init_core;
 
 mod ui;
-fn main() -> Result<()> {
-    // Create an application.
-    let mut app = App::new();
+mod core;
+mod error;
 
-    // Initialize the terminal user interface.
-    let backend = CrosstermBackend::new(std::io::stderr());
-    let terminal = Terminal::new(backend)?;
-    let events = EventHandler::new(250);
-    let mut tui = Tui::new(terminal, events);
-    tui.enter()?;
-
-    // Start the main loop.
-    while !app.should_quit {
-        // Render the user interface.
-        tui.draw(&mut app)?;
-        // Handle events.
-        match tui.events.next()? {
-            Event::Tick => {}
-            Event::Key(key_event) => update(&mut app, key_event),
-            Event::Mouse(_) => {}
-            Event::Resize(_, _) => {}
-        };
-    }
-
-    // Exit the user interface.
-    tui.exit()?;
-    Ok(())
+fn main() {
+    init_core();
 }
-// ANCHOR_END: main

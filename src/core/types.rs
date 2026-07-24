@@ -5,25 +5,47 @@ use serde::{Deserialize, Serialize};
 
 pub static APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 
+#[derive(Serialize, Deserialize)]
 pub struct Data {
     pub country: Country,
     pub region: Region,
     pub city: City,
 }
+#[derive(Serialize, Deserialize)]
+
 pub struct Country {
     pub iso2: String, // unique id
     pub name: String,
+    #[serde(with = "MadhabDef")]
     pub madhab: Madhab,
+    #[serde(with = "MethodDef")]
     pub method: Method,
 }
-
+#[derive(Serialize, Deserialize)]
+#[serde(remote = "Madhab")]
+pub enum MadhabDef {
+    Hanafi,
+    Shafi,
+}
+#[derive(Serialize, Deserialize)]
+#[serde(remote = "Method")]
+pub enum MethodDef {
+    MuslimWorldLeague,
+    Egyptian,
+    Karachi,
+    UmmAlQura,
+    Dubai,
+    MoonsightingCommittee,
+    NorthAmerica,
+    Kuwait,
+    Qatar,
+    Singapore,
+    Turkey,
+    Tehran,
+    Other,
+}
 impl Country {
-    pub fn new(
-        iso2: String,
-        name: String,
-        madhab: Madhab,
-        method: Method,
-    ) -> Self {
+    pub fn new(iso2: String, name: String, madhab: Madhab, method: Method) -> Self {
         Self {
             iso2,
             name,
@@ -32,6 +54,7 @@ impl Country {
         }
     }
 }
+#[derive(Serialize, Deserialize)]
 
 pub struct Region {
     pub name: String,
@@ -42,6 +65,7 @@ impl Region {
         Self { name }
     }
 }
+#[derive(Serialize, Deserialize)]
 
 pub struct City {
     pub name: String,
@@ -50,7 +74,7 @@ pub struct City {
 }
 
 impl City {
-    pub fn new( name: String, coordinates: Coordinates, timezone: Timezone) -> Self {
+    pub fn new(name: String, coordinates: Coordinates, timezone: Timezone) -> Self {
         Self {
             name,
             coordinates,
@@ -79,6 +103,7 @@ pub struct Angles {
     pub fajr: f64,
     pub isha: f64,
 }
+#[derive(Serialize, Deserialize)]
 
 pub struct Timezone {
     gmt_offset: i64,
