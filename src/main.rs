@@ -1,16 +1,40 @@
-use crate::error::ErrorType;
-use crate::ratatui_tutorials::counter_app::counter_app;
-use crate::ratatui_tutorials::hello_world::hello_world;
+use ratatui::backend::CrosstermBackend;
+use ratatui::Terminal;
+use crate::ui::app::App;
+use crate::ui::event::{Event, EventHandler};
+use crate::ui::tui::Tui;
+use crate::ui::update::update;
+use color_eyre::Result;
+// ANCHOR: imports_main
+// ANCHOR: declare_mods
 
-mod core;
-pub mod error;
 mod ui;
+fn main() -> Result<()> {
+    // Create an application.
+    let mut app = App::new();
 
-mod ratatui_tutorials;
+    // Initialize the terminal user interface.
+    let backend = CrosstermBackend::new(std::io::stderr());
+    let terminal = Terminal::new(backend)?;
+    let events = EventHandler::new(250);
+    let mut tui = Tui::new(terminal, events);
+    tui.enter()?;
 
-fn main() -> Result<(), ErrorType> {
-    // testing out some tutorials
-    // hello_world()?;
-    counter_app()?;
+    // Start the main loop.
+    while !app.should_quit {
+        // Render the user interface.
+        tui.draw(&mut app)?;
+        // Handle events.
+        match tui.events.next()? {
+            Event::Tick => {}
+            Event::Key(key_event) => update(&mut app, key_event),
+            Event::Mouse(_) => {}
+            Event::Resize(_, _) => {}
+        };
+    }
+
+    // Exit the user interface.
+    tui.exit()?;
     Ok(())
 }
+// ANCHOR_END: main
