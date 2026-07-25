@@ -1,0 +1,3 @@
+
+// add up user settings from hijri date adjustements. to color and theme sets ...
+struct Config;

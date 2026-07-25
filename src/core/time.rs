@@ -1,20 +1,24 @@
 // handle all logic related to time unit
 
 use crate::core::date::HijriDate;
+use crate::core::types::MadhabDef;
+use crate::core::types::MethodDef;
+use crate::core::types::{Coordinates, Data};
 use crate::error::ErrorType;
-use crate::core::types::{ Data};
 use chrono::{DateTime, Utc};
-use salah::{
-    Configuration, Coordinates, Madhab, Method, PrayerSchedule, PrayerTimes, TimeAdjustment,
-};
+use salah::{Configuration, Madhab, Method, PrayerSchedule, PrayerTimes, TimeAdjustment};
+use serde::{Deserialize, Serialize};
 
+#[derive(Serialize, Deserialize)]
 pub struct PrayerData {
+    #[serde(with = "MadhabDef")]
     pub madhab: Madhab,
+    #[serde(with = "MethodDef")]
     pub method: Method,
-    pub coordinates: crate::core::types::Coordinates,
+    pub coordinates: Coordinates,
 }
 impl PrayerData {
-    pub fn new(data: Data) -> Self {
+    pub fn from_data(data: Data) -> Self {
         let madhab = data.country.madhab;
         let method = data.country.method;
         let coordinates = data.city.coordinates;
@@ -44,7 +48,8 @@ impl PrayerData {
         } else {
             Configuration::with(self.method, self.madhab)
         };
-        let location = Coordinates::new(self.coordinates.latitude, self.coordinates.longitude);
+        let location =
+            salah::Coordinates::new(self.coordinates.latitude, self.coordinates.longitude);
         let prayer_times = PrayerSchedule::new()
             .on(utc.date_naive())
             .with_configuration(params)
@@ -53,19 +58,13 @@ impl PrayerData {
             .map_err(ErrorType::CalculatingPrayerTimesFailed)?;
         Ok(prayer_times)
     }
-
-}
-enum DisplayMode {
-    All,
-    ImportantPrayers,
-    ImportantPrayersWithSunrise,
 }
 
 #[cfg(test)]
 mod test {
     use crate::core::time::PrayerData;
     use crate::core::types::Coordinates;
-    use chrono::{NaiveDate, TimeZone, Utc};
+    use chrono::{TimeZone, Utc};
     use salah::{Madhab, Method};
 
     #[test]

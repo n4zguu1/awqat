@@ -10,11 +10,13 @@
 // approach three:
 // make the user mannual configure the hijri date based on local data
 
+use crate::error::ErrorType;
 use chrono::{Datelike, NaiveDate};
 use icu_calendar::Date;
 use icu_calendar::cal::Hijri;
 use std::fmt::{Display, Formatter};
-use crate::error::ErrorType;
+
+
 
 pub enum HijriMonths {
     Muharram,
@@ -82,13 +84,13 @@ impl Display for HijriDate {
     }
 }
 
-// todo: the hijri date doesn work on before hijrah, it delivers wrong dates.
+// todo: the hijri date doest work on before hijrah, it delivers wrong dates.
 impl HijriDate {
     // before Hijrah years are prefixed by '-'
     pub fn new(year: i32, month: u8, day: u8) -> Result<Self, ErrorType> {
-        if month > 12 || month < 1 {
+        if !(1..=12).contains(&month) {
             return Err(ErrorType::MonthParamError);
-        } else if day > 30 || day < 1 {
+        } else if !(1..=30).contains(&day) {
             return Err(ErrorType::DayParamError);
         }
         let month_name = HijriMonths::from_number(month);
@@ -99,7 +101,7 @@ impl HijriDate {
             month_name,
         })
     }
-    pub fn to_numeric(&self) -> NumericHijriDate {
+    pub fn to_numeric(&self) -> NumericHijriDate<'_> {
         NumericHijriDate(self)
     }
     pub fn from_gregorian_to_ummalqura(gregorian_date: NaiveDate) -> Result<Self, ErrorType> {

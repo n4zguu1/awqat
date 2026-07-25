@@ -1,5 +1,7 @@
-use crate::core::search::selected_city;
 use crate::core::storage::{db_connection, load_config, save_config};
+use crate::core::time::PrayerData;
+use crate::core::types::Data;
+use chrono::Utc;
 
 pub mod date;
 pub mod embeddings;
@@ -10,6 +12,8 @@ pub mod types;
 
 pub fn init_core() {
     let conn = db_connection().unwrap();
-    let data = selected_city(442512, &conn).unwrap();
-    save_config(&data).unwrap();
+    let data = Data::from_city_id(442512, &conn).unwrap();
+    let prayers = PrayerData::from_data(data);
+    let prayer_times = prayers.calculate_prayer_times(&Utc::now()).unwrap();
+    save_config(&prayers).unwrap();
 }

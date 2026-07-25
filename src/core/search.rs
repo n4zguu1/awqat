@@ -41,9 +41,9 @@ pub fn search_city(conn: &Connection, name: &str) -> Result<HashMap<i64, String>
 
     Ok(hashmap)
 }
-// build the Data struct
-pub fn selected_city(id: i64, conn: &Connection) -> Result<Data, ErrorType> {
-    let sql = "
+impl Data {
+    pub fn from_city_id(id: i64, conn: &Connection) -> Result<Self, ErrorType> {
+        let sql = "
         SELECT
             ci.Name, ci.Latitude, ci.Longitude, ci.GmtOffset,
             r.Name,
@@ -54,47 +54,49 @@ pub fn selected_city(id: i64, conn: &Connection) -> Result<Data, ErrorType> {
         WHERE ci.Id = ?1
     ";
 
-    let (city_name, lat, lon, gmt, region_name, iso2, country_name, method_str, madhab_str) = conn
-        .query_row(sql, params![id], |row| {
-            Ok((
-                row.get::<_, String>(0)?,
-                row.get::<_, f64>(1)?,
-                row.get::<_, f64>(2)?,
-                row.get::<_, i64>(3)?,
-                row.get::<_, String>(4)?,
-                row.get::<_, String>(5)?,
-                row.get::<_, String>(6)?,
-                row.get::<_, String>(7)?,
-                row.get::<_, String>(8)?,
-            ))
-        })
-        .map_err(ErrorType::SqliteOperationFailed)?;
+        let (city_name, lat, lon, gmt, region_name, iso2, country_name, method_str, madhab_str) = conn
+            .query_row(sql, params![id], |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, f64>(1)?,
+                    row.get::<_, f64>(2)?,
+                    row.get::<_, i64>(3)?,
+                    row.get::<_, String>(4)?,
+                    row.get::<_, String>(5)?,
+                    row.get::<_, String>(6)?,
+                    row.get::<_, String>(7)?,
+                    row.get::<_, String>(8)?,
+                ))
+            })
+            .map_err(ErrorType::SqliteOperationFailed)?;
 
-    let madhab = match madhab_str.as_str() {
-        "Hanafi" => Madhab::Hanafi,
-        "Shafi" => Madhab::Shafi,
-        other => return Err(ErrorType::UnknownMadhab(other.to_string())),
-    };
+        let madhab = match madhab_str.as_str() {
+            "Hanafi" => Madhab::Hanafi,
+            "Shafi" => Madhab::Shafi,
+            other => return Err(ErrorType::UnknownMadhab(other.to_string())),
+        };
 
-    let method = match method_str.as_str() {
-        "MuslimWorldLeague" => Method::MuslimWorldLeague,
-        "Egyptian" => Method::Egyptian,
-        "Karachi" => Method::Karachi,
-        "UmmAlQura" => Method::UmmAlQura,
-        "Dubai" => Method::Dubai,
-        "MoonsightingCommittee" => Method::MoonsightingCommittee,
-        "NorthAmerica" => Method::NorthAmerica,
-        "Kuwait" => Method::Kuwait,
-        "Qatar" => Method::Qatar,
-        "Singapore" => Method::Singapore,
-        "Tehran" => Method::Tehran,
-        "Turkey" => Method::Turkey,
-        other => return Err(ErrorType::UnknownMethod(other.to_string())),
-    };
+        let method = match method_str.as_str() {
+            "MuslimWorldLeague" => Method::MuslimWorldLeague,
+            "Egyptian" => Method::Egyptian,
+            "Karachi" => Method::Karachi,
+            "UmmAlQura" => Method::UmmAlQura,
+            "Dubai" => Method::Dubai,
+            "MoonsightingCommittee" => Method::MoonsightingCommittee,
+            "NorthAmerica" => Method::NorthAmerica,
+            "Kuwait" => Method::Kuwait,
+            "Qatar" => Method::Qatar,
+            "Singapore" => Method::Singapore,
+            "Tehran" => Method::Tehran,
+            "Turkey" => Method::Turkey,
+            other => return Err(ErrorType::UnknownMethod(other.to_string())),
+        };
 
-    let city = City::new(city_name, Coordinates::new(lat, lon), Timezone::new(gmt));
-    let region = Region::new(region_name);
-    let country = Country::new(iso2, country_name, madhab, method);
+        let city = City::new(city_name, Coordinates::new(lat, lon), Timezone::new(gmt));
+        let region = Region::new(region_name);
+        let country = Country::new(iso2, country_name, madhab, method);
 
-    Ok(Data::new(country, region, city))
+        Ok(Data::new(country, region, city))
+    }
 }
+// build the Data struct

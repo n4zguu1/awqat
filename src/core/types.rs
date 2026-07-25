@@ -1,5 +1,3 @@
-#![allow(warnings)]
-
 use salah::{Madhab, Method};
 use serde::{Deserialize, Serialize};
 
@@ -98,23 +96,18 @@ impl Coordinates {
     }
 }
 
-#[derive(PartialEq)]
-pub struct Angles {
-    pub fajr: f64,
-    pub isha: f64,
-}
-#[derive(Serialize, Deserialize)]
 
+#[derive(Serialize, Deserialize)]
 pub struct Timezone {
-    gmt_offset: i64,
+    utc_offset: i64,
 }
 impl Timezone {
     pub fn new(offset: i64) -> Self {
-        Timezone { gmt_offset: offset }
+        Timezone { utc_offset: offset }
     }
-    pub fn to_gmt_format(&self) -> String {
-        let is_negative = self.gmt_offset < 0;
-        let abs_offset_seconds = self.gmt_offset.abs();
+    pub fn to_utc_format(&self) -> String {
+        let is_negative = self.utc_offset < 0;
+        let abs_offset_seconds = self.utc_offset.abs();
 
         // 2. Do clean integer math instead of risking float precision issues
         let hours = abs_offset_seconds / 3600;
@@ -141,13 +134,13 @@ impl Data {
 }
 
 #[cfg(test)]
-pub mod tests {
+mod tests {
     use crate::core::types::Timezone;
     #[test]
     pub fn gmt_name() {
         let timezone = Timezone::new(-21600);
         let timezone2 = Timezone::new(16200);
-        assert_eq!(timezone.to_gmt_format(), "UTC-06:00".to_string());
-        assert_eq!(timezone2.to_gmt_format(), "UTC+04:30".to_string())
+        assert_eq!(timezone.to_utc_format(), "UTC-06:00".to_string());
+        assert_eq!(timezone2.to_utc_format(), "UTC+04:30".to_string())
     }
 }

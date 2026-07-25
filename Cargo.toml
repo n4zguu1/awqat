@@ -15,8 +15,3 @@ salah = "0.7.6"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.150"
 thiserror = "2.0.18"
-
-[build-dependencies]
-rusqlite = "0.40.1"
-serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.150"

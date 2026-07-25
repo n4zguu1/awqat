@@ -3,6 +3,8 @@ use crate::core::types::{APP_VERSION, Data};
 use crate::error::ErrorType;
 use directories::ProjectDirs;
 use rusqlite::Connection;
+use serde::de::DeserializeOwned;
+use serde::{Deserialize, Serialize};
 use std::fs::OpenOptions;
 use std::io::{BufReader, BufWriter};
 
@@ -16,14 +18,17 @@ pub fn db_connection() -> Result<Connection, ErrorType> {
     let conn = Connection::open(&temp_file_path).map_err(ErrorType::SqliteConnectionOpenFailed)?;
     Ok(conn)
 }
-pub fn save_config(data: &Data) -> Result<(), ErrorType> {
+pub fn save_config<T>(data: &T) -> Result<(), ErrorType>
+where
+    T: Serialize,
+{
     let config_path = if let Some(proj_dirs) = ProjectDirs::from("com", "awqat", "awqat") {
         proj_dirs.config_dir().to_path_buf()
     } else {
         return Err(ErrorType::ConfigDirError);
     };
     std::fs::create_dir_all(&config_path)?;
-    let file_name = format!("config_{}.db", APP_VERSION);
+    let file_name = format!("config_{}.json", APP_VERSION);
     let mut file_path = config_path.clone();
     file_path.push(file_name);
     let file = OpenOptions::new()
@@ -36,17 +41,20 @@ pub fn save_config(data: &Data) -> Result<(), ErrorType> {
 
     Ok(())
 }
-pub fn load_config() -> Result<Data, ErrorType> {
+pub fn load_config<T>() -> Result<T, ErrorType>
+where
+    T: DeserializeOwned,
+{
     let config_path = if let Some(proj_dirs) = ProjectDirs::from("com", "awqat", "awqat") {
         proj_dirs.config_dir().to_path_buf()
     } else {
         return Err(ErrorType::ConfigDirError);
     };
-    let file_name = format!("config_{}.db", APP_VERSION);
+    let file_name = format!("config_{}.json", APP_VERSION);
     let mut config_file_path = config_path.clone();
     config_file_path.push(file_name);
     let file = OpenOptions::new().read(true).open(&config_file_path)?;
     let reader = BufReader::new(file);
-    let data: Data = serde_json::from_reader(reader).map_err(ErrorType::DeserializeError)?;
+    let data: T = serde_json::from_reader(reader).map_err(ErrorType::DeserializeError)?;
     Ok(data)
 }

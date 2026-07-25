@@ -4,3 +4,9 @@
 - table for all counties/states/cities
 - a good search fuzzy finder , some cities naming are like this "Shqipëria"
 - the serializing mechanism need to be optimized to not was startup times and decrease memory consumption
+
+
+- after finishing this project, run it into some agent to provide feedback about idomatic ways i didnt follow.
+  - some structs are not needed and redundent
+  - some logic arent in there right place 
+  - still struggle with proejct tree, do i need seperate types.rs file , what to right in it, some files like date.rs acttually have some types specific to date
