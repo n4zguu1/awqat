@@ -5,8 +5,10 @@ use crate::core::types::MadhabDef;
 use crate::core::types::MethodDef;
 use crate::core::types::{Coordinates, UserData};
 use crate::error::ErrorType;
-use chrono::{Days, Months, NaiveDate, TimeDelta};
-use salah::{Configuration, Madhab, Method, PrayerSchedule, PrayerTimes, TimeAdjustment};
+use chrono::{DateTime, Days, Months, NaiveDate, TimeDelta, Utc};
+use salah::{
+    Configuration, Madhab, Method, Parameters, PrayerSchedule, PrayerTimes, TimeAdjustment,
+};
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
 
@@ -19,8 +21,10 @@ pub struct CalendarPrayers {
     last_next_days: NaiveDate,
     calendar: VecDeque<PrayerTimes>,
 }
+
+// Then in your code:
 impl CalendarPrayers {
-    fn from_month(base_date: &NaiveDate, prayer_data: &PrayerData) -> Result<Self, ErrorType> {
+    pub fn from_date(base_date: &NaiveDate, prayer_data: &PrayerData) -> Result<Self, ErrorType> {
         let first_prev_days = base_date
             .checked_sub_months(Months::new(MONTH_OFFSET))
             .unwrap();
