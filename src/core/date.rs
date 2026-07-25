@@ -16,6 +16,10 @@ use icu_calendar::Date;
 use icu_calendar::cal::Hijri;
 use std::fmt::{Display, Formatter};
 
+// pub struct AllDates {
+//     hijri_date: NaiveHijriDate,
+//     date:
+// }
 
 
 pub enum HijriMonths {
@@ -72,20 +76,20 @@ impl Display for HijriMonths {
     }
 }
 
-pub struct HijriDate {
+pub struct NaiveHijriDate {
     pub year: i32,
     pub month_name: HijriMonths,
     pub month: u8,
     pub day: u8,
 }
-impl Display for HijriDate {
+impl Display for NaiveHijriDate {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{} {} {}", self.day, self.month_name, self.year)
     }
 }
 
 // todo: the hijri date doest work on before hijrah, it delivers wrong dates.
-impl HijriDate {
+impl NaiveHijriDate {
     // before Hijrah years are prefixed by '-'
     pub fn new(year: i32, month: u8, day: u8) -> Result<Self, ErrorType> {
         if !(1..=12).contains(&month) {
@@ -94,7 +98,7 @@ impl HijriDate {
             return Err(ErrorType::DayParamError);
         }
         let month_name = HijriMonths::from_number(month);
-        Ok(HijriDate {
+        Ok(NaiveHijriDate {
             month,
             year,
             day,
@@ -119,7 +123,7 @@ impl HijriDate {
         let month = date.month().ordinal;
         let day = date.day_of_month().0;
         let month_name = HijriMonths::from_number(month);
-        Ok(HijriDate {
+        Ok(NaiveHijriDate {
             year,
             month,
             day,
@@ -127,7 +131,7 @@ impl HijriDate {
         })
     }
 }
-pub struct NumericHijriDate<'a>(&'a HijriDate);
+pub struct NumericHijriDate<'a>(&'a NaiveHijriDate);
 impl<'a> Display for NumericHijriDate<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}-{}-{}", self.0.day, self.0.month, self.0.year)
@@ -136,13 +140,13 @@ impl<'a> Display for NumericHijriDate<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::core::date::HijriDate;
+    use crate::core::date::NaiveHijriDate;
     use chrono::NaiveDate;
 
     #[test]
     pub fn ummalqura_hijri_date() {
         let hijri =
-            HijriDate::from_gregorian_to_ummalqura(NaiveDate::from_ymd_opt(2014, 2, 1).unwrap())
+            NaiveHijriDate::from_gregorian_to_ummalqura(NaiveDate::from_ymd_opt(2014, 2, 1).unwrap())
                 .unwrap();
         let hijri_numeric = hijri.to_numeric();
 

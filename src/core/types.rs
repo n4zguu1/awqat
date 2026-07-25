@@ -96,10 +96,9 @@ impl Coordinates {
     }
 }
 
-
 #[derive(Serialize, Deserialize)]
 pub struct Timezone {
-    utc_offset: i64,
+    pub utc_offset: i64,
 }
 impl Timezone {
     pub fn new(offset: i64) -> Self {

@@ -14,6 +14,6 @@ pub fn init_core() {
     let conn = db_connection().unwrap();
     let data = Data::from_city_id(442512, &conn).unwrap();
     let prayers = PrayerData::from_data(data);
-    let prayer_times = prayers.calculate_prayer_times(&Utc::now()).unwrap();
+    let prayer_times = prayers.calculate(&Utc::now()).unwrap();
     save_config(&prayers).unwrap();
 }

@@ -9,4 +9,5 @@
 - after finishing this project, run it into some agent to provide feedback about idomatic ways i didnt follow.
   - some structs are not needed and redundent
   - some logic arent in there right place 
+  - check params, burrowing and ownership idomatic rules . returns
   - still struggle with proejct tree, do i need seperate types.rs file , what to right in it, some files like date.rs acttually have some types specific to date
