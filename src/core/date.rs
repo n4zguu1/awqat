@@ -11,47 +11,42 @@
 // make the user mannual configure the hijri date based on local data
 
 use crate::error::ErrorType;
-use chrono::{Datelike, NaiveDate};
+use chrono::{Datelike, Month, NaiveDate};
 use icu_calendar::Date;
 use icu_calendar::cal::Hijri;
+use salah::PrayerTimes;
 use std::fmt::{Display, Formatter};
 
-// pub struct AllDates {
-//     hijri_date: NaiveHijriDate,
-//     date:
-// }
-
-
 pub enum HijriMonths {
-    Muharram,
-    Safar,
-    RabiAlAwwal,
-    RabiAlThani,
-    JumadaAlAwwal,
-    JumadaAlThani,
-    Rajab,
-    Shaban,
-    Ramadan,
-    Shawwal,
-    DhuAlQadah,
-    DhuAlHijjah,
+    Muharram = 1,
+    Safar = 2,
+    RabiAlAwwal = 3,
+    RabiAlThani = 4,
+    JumadaAlAwwal = 5,
+    JumadaAlThani = 6,
+    Rajab = 7,
+    Shaban = 8,
+    Ramadan = 9,
+    Shawwal = 10,
+    DhuAlQadah = 11,
+    DhuAlHijjah = 12,
 }
 impl HijriMonths {
-    pub fn from_number(month: u8) -> Self {
+    pub fn from_number(month: u8) -> Option<Self> {
         match month {
-            1 => HijriMonths::Muharram,
-            2 => HijriMonths::Safar,
-            3 => HijriMonths::RabiAlAwwal,
-            4 => HijriMonths::RabiAlThani,
-            5 => HijriMonths::JumadaAlAwwal,
-            6 => HijriMonths::JumadaAlThani,
-            7 => HijriMonths::Rajab,
-            8 => HijriMonths::Shaban,
-            9 => HijriMonths::Ramadan,
-            10 => HijriMonths::Shawwal,
-            11 => HijriMonths::DhuAlQadah,
-            12 => HijriMonths::DhuAlHijjah,
-            _ => unreachable!("a year can have only 12 months"),
+            1 => Some(HijriMonths::Muharram),
+            2 => Some(HijriMonths::Safar),
+            3 => Some(HijriMonths::RabiAlAwwal),
+            4 => Some(HijriMonths::RabiAlThani),
+            5 => Some(HijriMonths::JumadaAlAwwal),
+            6 => Some(HijriMonths::JumadaAlThani),
+            7 => Some(HijriMonths::Rajab),
+            8 => Some(HijriMonths::Shaban),
+            9 => Some(HijriMonths::Ramadan),
+            10 => Some(HijriMonths::Shawwal),
+            11 => Some(HijriMonths::DhuAlQadah),
+            12 => Some(HijriMonths::DhuAlHijjah),
+            _ => None,
         }
     }
 }
@@ -97,7 +92,11 @@ impl NaiveHijriDate {
         } else if !(1..=30).contains(&day) {
             return Err(ErrorType::DayParamError);
         }
-        let month_name = HijriMonths::from_number(month);
+        let month_name = if let Some(hijri) = HijriMonths::from_number(month) {
+            hijri
+        } else {
+            return Err(ErrorType::MonthParamError);
+        };
         Ok(NaiveHijriDate {
             month,
             year,
@@ -122,13 +121,7 @@ impl NaiveHijriDate {
         let year = date.year().era_year_or_related_iso();
         let month = date.month().ordinal;
         let day = date.day_of_month().0;
-        let month_name = HijriMonths::from_number(month);
-        Ok(NaiveHijriDate {
-            year,
-            month,
-            day,
-            month_name,
-        })
+        NaiveHijriDate::new(year, month, day)
     }
 }
 pub struct NumericHijriDate<'a>(&'a NaiveHijriDate);
@@ -145,9 +138,10 @@ mod tests {
 
     #[test]
     pub fn ummalqura_hijri_date() {
-        let hijri =
-            NaiveHijriDate::from_gregorian_to_ummalqura(NaiveDate::from_ymd_opt(2014, 2, 1).unwrap())
-                .unwrap();
+        let hijri = NaiveHijriDate::from_gregorian_to_ummalqura(
+            NaiveDate::from_ymd_opt(2014, 2, 1).unwrap(),
+        )
+        .unwrap();
         let hijri_numeric = hijri.to_numeric();
 
         assert_eq!(format!("{}", hijri_numeric), "1-4-1435");

@@ -1,14 +1,76 @@
 // handle all logic related to time unit
 
-use crate::core::date::NaiveHijriDate;
+use crate::core::date::{HijriMonths, NaiveHijriDate};
 use crate::core::types::MadhabDef;
 use crate::core::types::MethodDef;
-use crate::core::types::{Coordinates, Data};
+use crate::core::types::{Coordinates, UserData};
 use crate::error::ErrorType;
-use chrono::{DateTime, Utc};
+use chrono::{Days, Months, NaiveDate, TimeDelta};
 use salah::{Configuration, Madhab, Method, PrayerSchedule, PrayerTimes, TimeAdjustment};
 use serde::{Deserialize, Serialize};
+use std::collections::VecDeque;
 
+// sliding window approach, based on user scrolling we pop and push new months
+
+const MONTH_OFFSET: u32 = 4;
+// we keep track of last previous and next days to update
+pub struct CalendarPrayers {
+    first_prev_days: NaiveDate,
+    last_next_days: NaiveDate,
+    calendar: VecDeque<PrayerTimes>,
+}
+impl CalendarPrayers {
+    fn from_month(base_date: &NaiveDate, prayer_data: &PrayerData) -> Result<Self, ErrorType> {
+        let first_prev_days = base_date
+            .checked_sub_months(Months::new(MONTH_OFFSET))
+            .unwrap();
+        let last_next_days = base_date
+            .checked_add_months(Months::new(MONTH_OFFSET))
+            .unwrap();
+        let mut cal_prayers = VecDeque::new();
+        let mut current_day = first_prev_days;
+        while current_day <= last_next_days {
+            let prayers = prayer_data.calculate(&current_day).map_err(|_e| {
+                ErrorType::CalculatingPrayerTimesFailed(
+                    "Calculating prayer times failed.".to_string(),
+                )
+            })?;
+            cal_prayers.push_front(prayers);
+            current_day += TimeDelta::days(1);
+        }
+        Ok(CalendarPrayers {
+            first_prev_days,
+            last_next_days,
+            calendar: cal_prayers,
+        })
+    }
+
+    pub fn pop_first_prev(&mut self) {
+        self.calendar.pop_back().unwrap();
+    }
+
+    pub fn pop_last_next(&mut self) {
+        self.calendar.pop_front().unwrap();
+    }
+    pub fn push_first_prev(&mut self, prayer_data: &PrayerData) -> Result<(), ErrorType> {
+        let new = self.first_prev_days.checked_sub_days(Days::new(1)).unwrap();
+        let prayer_times = prayer_data.calculate(&new).map_err(|_e| {
+            ErrorType::CalculatingPrayerTimesFailed("Calculating prayer times failed.".to_string())
+        })?;
+        self.calendar.push_back(prayer_times);
+        self.first_prev_days = new;
+        Ok(())
+    }
+    pub fn push_last_next(&mut self, prayer_data: &PrayerData) -> Result<(), ErrorType> {
+        let new = self.last_next_days.checked_add_days(Days::new(1)).unwrap();
+        let prayer_times = prayer_data.calculate(&new).map_err(|_e| {
+            ErrorType::CalculatingPrayerTimesFailed("Calculating prayer times failed.".to_string())
+        })?;
+        self.calendar.push_front(prayer_times);
+        self.last_next_days = new;
+        Ok(())
+    }
+}
 #[derive(Serialize, Deserialize)]
 pub struct PrayerData {
     #[serde(with = "MadhabDef")]
@@ -18,11 +80,12 @@ pub struct PrayerData {
     pub coordinates: Coordinates,
     pub offset: i64,
 }
+
 impl PrayerData {
-    pub fn from_data(data: Data) -> Self {
+    pub fn from_data(data: &UserData) -> Self {
         let madhab = data.country.madhab;
         let method = data.country.method;
-        let coordinates = data.city.coordinates;
+        let coordinates = data.city.coordinates.clone();
         let offset = data.city.timezone.utc_offset;
         PrayerData {
             madhab,
@@ -33,14 +96,14 @@ impl PrayerData {
     }
     // handle the specific cases
     // todo: the calculations are based on the sun hitting specif angles. some places, sun never goes down. we need to cover those in feature versions
-    pub fn calculate(&self, utc: &DateTime<Utc>) -> Result<PrayerTimes, ErrorType> {
+    // the calculate isnt aware of location data.
+    pub fn calculate(&self, naive_date: &NaiveDate) -> Result<PrayerTimes, ErrorType> {
         // special case for UmmAlQura method , where they calculate isha time little different based on Islamic month
         // the method uses fixed time interval between maghreb and isha, where in ramadan isha = maghreb + 120 min. in other months isha= maghreb + 90
         // the lib already calcualates the addjustment on other months, we need ajustement for ramadan
-        let local = *utc + chrono::Duration::seconds(self.offset);
-        let date = NaiveHijriDate::from_gregorian_to_ummalqura(local.date_naive())?;
+        let hijri_date = NaiveHijriDate::from_gregorian_to_ummalqura(*naive_date)?;
         // explicitly adjust for Ramadan
-        let params = if date.month == 9 && self.method == Method::UmmAlQura {
+        let params = if hijri_date.month == 9 && self.method == Method::UmmAlQura {
             // special case for isha, +30 min then the usual
             let adjustment = TimeAdjustment {
                 isha: 30,
@@ -55,7 +118,7 @@ impl PrayerData {
         let location =
             salah::Coordinates::new(self.coordinates.latitude, self.coordinates.longitude);
         let prayer_times = PrayerSchedule::new()
-            .on(local.date_naive())
+            .on(*naive_date)
             .with_configuration(params)
             .for_location(location)
             .calculate()
@@ -69,13 +132,16 @@ impl PrayerData {
 mod test {
     use crate::core::time::PrayerData;
     use crate::core::types::Coordinates;
-    use chrono::{TimeZone, Utc};
+    use chrono::{NaiveDate, TimeZone, Utc};
     use salah::{Madhab, Method};
 
     #[test]
     fn prayer_times_adjustment() {
-        let today = Utc::now();
-        let ramadan = Utc.with_ymd_and_hms(2025, 3, 21, 0, 0, 0).unwrap();
+        let today = Utc::now().date_naive();
+        let ramadan = Utc
+            .with_ymd_and_hms(2025, 3, 21, 0, 0, 0)
+            .unwrap()
+            .date_naive();
         let chlef_prayer_data = PrayerData {
             madhab: Madhab::Shafi,
             method: Method::MuslimWorldLeague,
@@ -101,57 +167,5 @@ mod test {
         println!("{:?}", chlef_prayer_times);
         println!("{:?}", mecca_prayer_times);
         println!("{:?}", mecca_prayer_times_ramadan);
-    }
-
-    #[test]
-    fn offset_changes_date_for_prayer_calculation() {
-        // Scenario: it's Jan 14, 10 PM in New York (UTC-5)
-        // UTC says: Jan 15, 03:00 — a different date!
-        //
-        // Without offset: salah calculates for Jan 15 → WRONG
-        // With offset:    salah calculates for Jan 14 → CORRECT
-
-        let utc_time = Utc.with_ymd_and_hms(2025, 1, 15, 3, 0, 0).unwrap();
-        // New York: UTC-5 → offset = -18000 seconds
-        // 03:00 UTC - 5h = 22:00 on Jan 14
-
-        let new_york = PrayerData {
-            madhab: Madhab::Shafi,
-            method: Method::NorthAmerica,
-            coordinates: Coordinates {
-                latitude: 40.7128,
-                longitude: -74.0060,
-            },
-            offset: -18000,
-        };
-
-        // With offset: local date should be Jan 14
-        let result = new_york.calculate(&utc_time);
-        assert!(result.is_ok(), "prayer calculation should succeed");
-
-        // Without offset (offset=0): UTC date would be Jan 15
-        let no_offset = PrayerData {
-            madhab: Madhab::Shafi,
-            method: Method::NorthAmerica,
-            coordinates: Coordinates {
-                latitude: 40.7128,
-                longitude: -74.0060,
-            },
-            offset: 0,
-        };
-
-        let result_no_offset = no_offset.calculate(&utc_time);
-        assert!(result_no_offset.is_ok(), "prayer calculation should succeed");
-
-        // both succeed, but they calculate for DIFFERENT dates
-        // the offset version calculates for Jan 14 (correct for New York user)
-        // the no-offset version calculates for Jan 15 (wrong for New York user)
-
-        println!("UTC time:        {}", utc_time);
-        println!("With offset:     calculates for Jan 14 (correct)");
-        println!("Without offset:  calculates for Jan 15 (wrong)");
-        println!();
-        println!("Prayer times WITH offset (Jan 14):   {:?}", result.unwrap());
-        println!("Prayer times WITHOUT offset (Jan 15): {:?}", result_no_offset.unwrap());
     }
 }

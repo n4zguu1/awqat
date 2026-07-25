@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 pub static APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Serialize, Deserialize)]
-pub struct Data {
+pub struct UserData {
     pub country: Country,
     pub region: Region,
     pub city: City,
@@ -81,11 +81,12 @@ impl City {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq)]
+#[derive(Serialize, Deserialize, PartialEq,Clone)]
 pub struct Coordinates {
     pub latitude: f64,
     pub longitude: f64,
 }
+
 
 impl Coordinates {
     pub fn new(latitude: f64, longitude: f64) -> Self {
@@ -122,9 +123,9 @@ impl Timezone {
     }
 }
 
-impl Data {
+impl UserData {
     pub fn new(country: Country, region: Region, city: City) -> Self {
-        Data {
+        UserData {
             country,
             region,
             city,

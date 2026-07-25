@@ -7,7 +7,7 @@
 // the duplicates, what if there is two cities named with same name
 
 use crate::error::ErrorType;
-use crate::core::types::{City, Coordinates, Country, Data, Region, Timezone};
+use crate::core::types::{City, Coordinates, Country, UserData, Region, Timezone};
 use rusqlite::{Connection, params};
 use salah::{Madhab, Method};
 use std::collections::HashMap;
@@ -41,7 +41,7 @@ pub fn search_city(conn: &Connection, name: &str) -> Result<HashMap<i64, String>
 
     Ok(hashmap)
 }
-impl Data {
+impl UserData {
     pub fn from_city_id(id: i64, conn: &Connection) -> Result<Self, ErrorType> {
         let sql = "
         SELECT
@@ -96,7 +96,7 @@ impl Data {
         let region = Region::new(region_name);
         let country = Country::new(iso2, country_name, madhab, method);
 
-        Ok(Data::new(country, region, city))
+        Ok(UserData::new(country, region, city))
     }
 }
 // build the Data struct
