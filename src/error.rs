@@ -45,4 +45,6 @@ pub enum ErrorType {
     DeserializeError(serde_json::Error),
     #[error("failed to get the config directory")]
     ConfigDirError,
+    #[error("config file not found")]
+    ConfigFileNotFound,
 }

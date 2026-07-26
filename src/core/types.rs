@@ -1,7 +1,8 @@
 use salah::{Madhab as MadhabCrate, Method as MethodCrate};
 use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Formatter};
 
-pub static APP_VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Serialize, Deserialize)]
 pub struct UserData {
@@ -37,7 +38,7 @@ impl Madhab {
         }
     }
 }
-#[derive(Serialize, Deserialize, PartialEq)]
+#[derive(Serialize, Deserialize, PartialEq, Clone)]
 pub enum Method {
     MuslimWorldLeague,
     Egyptian,
@@ -87,6 +88,27 @@ impl Method {
             Method::Tehran => MethodCrate::Tehran,
             Method::Other => MethodCrate::Other,
         }
+    }
+}
+impl Display for Method {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let name = match self {
+            Method::MuslimWorldLeague => "MuslimWorldLeague",
+            Method::Egyptian => "Egyptian",
+            Method::Karachi => "Karachi",
+            Method::UmmAlQura => "UmmAlQura",
+            Method::Dubai => "Dubai",
+            Method::MoonsightingCommittee => "MoonsightingCommittee",
+            Method::NorthAmerica => "NorthAmerica",
+            Method::Kuwait => "Kuwait",
+            Method::Qatar => "Qatar",
+            Method::Singapore => "Singapore",
+            Method::Turkey => "Turkey",
+            Method::Tehran => "Tehran",
+            Method::Other => "Other",
+        };
+
+        write!(f, "{name}")
     }
 }
 impl Country {

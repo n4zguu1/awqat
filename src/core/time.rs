@@ -51,7 +51,7 @@ impl UserData {
         // special case for UmmAlQura method , where they calculate isha time little different based on Islamic month
         // the method uses fixed time interval between maghreb and isha, where in ramadan isha = maghreb + 120 min. in other months isha= maghreb + 90
         // the lib already calcualates the addjustment on other months, we need ajustement for ramadan
-        let hijri_date = NaiveHijriDate::from_gregorian_to_ummalqura(*naive_date)?;
+        let hijri_date = NaiveHijriDate::from_gregorian_to_ummalqura(&naive_date)?;
         // explicitly adjust for Ramadan
         let params = if hijri_date.month == 9 && self.country.method == Method::UmmAlQura {
             // special case for isha, +30 min then the usual

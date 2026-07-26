@@ -106,7 +106,7 @@ impl NaiveHijriDate {
     pub fn to_numeric(&self) -> NumericHijriDate<'_> {
         NumericHijriDate(self)
     }
-    pub fn from_gregorian_to_ummalqura(gregorian_date: NaiveDate) -> Result<Self, ErrorType> {
+    pub fn from_gregorian_to_ummalqura(gregorian_date: &NaiveDate) -> Result<Self, ErrorType> {
         let calendar = Hijri::new_umm_al_qura();
 
         let iso_date = Date::try_new_iso(
@@ -138,7 +138,7 @@ mod tests {
     #[test]
     pub fn ummalqura_hijri_date() {
         let hijri = NaiveHijriDate::from_gregorian_to_ummalqura(
-            NaiveDate::from_ymd_opt(2014, 2, 1).unwrap(),
+            &NaiveDate::from_ymd_opt(2014, 2, 1).unwrap(),
         )
         .unwrap();
         let hijri_numeric = hijri.to_numeric();

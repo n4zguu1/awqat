@@ -6,7 +6,7 @@ use rusqlite::Connection;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use std::fs::OpenOptions;
-use std::io::{BufReader, BufWriter};
+use std::io::{BufReader, BufWriter, ErrorKind};
 use std::path::{Path, PathBuf};
 
 pub fn db_connection() -> Result<Connection, ErrorType> {
@@ -37,7 +37,13 @@ pub fn load_config<T>(path: &Path) -> Result<T, ErrorType>
 where
     T: DeserializeOwned,
 {
-    let file = OpenOptions::new().read(true).open(path)?;
+    let file = OpenOptions::new()
+        .read(true)
+        .open(path)
+        .map_err(|e| match e.kind() {
+            ErrorKind::NotFound => ErrorType::ConfigFileNotFound,
+            _ => ErrorType::IOError(e),
+        })?;
     let reader = BufReader::new(file);
     let data: T = serde_json::from_reader(reader).map_err(ErrorType::DeserializeError)?;
     Ok(data)
