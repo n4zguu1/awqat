@@ -1,4 +1,4 @@
-use crate::core::storage::{db_connection, load_config, save_config};
+use crate::core::storage::{db_connection, save_config};
 use crate::core::types::UserData;
 use chrono::Utc;
 use std::path::Path;

@@ -12,13 +12,15 @@ use crate::core::types::UserData;
 use crate::error::ErrorType;
 use chrono::{DateTime, Local};
 
-struct RunningData {
-    date_time: DateTime<Local>,
-    method: String,
-    hijri_date: NaiveHijriDate,
-    prayer_times: PrayerTimes,
-    city: String,
+pub struct RunningData {
+    pub date_time: DateTime<Local>,
+    pub method: String,
+    pub hijri_date: NaiveHijriDate,
+    pub prayer_times: PrayerTimes,
+    pub city: String,
+
 }
+
 impl RunningData {
     fn new(data: &UserData) -> Result<Self, ErrorType> {
         let date_time = Local::now();
@@ -34,19 +36,20 @@ impl RunningData {
             hijri_date,
         })
     }
+
 }
-struct SetupData {
-    city_input: String,
+pub struct SetupData {
+    pub city_input: String,
 }
-enum AppState {
+pub enum AppState {
     Running(RunningData),
     Setup(SetupData),
     Loading,
     Settings,
     Error(ErrorType),
 }
-struct App {
-    state: AppState,
+pub struct App {
+    pub state: AppState,
 }
 impl App {
     // maps all errors to Error state so they can be handled in the UI, instead of return them as result
@@ -77,5 +80,6 @@ impl App {
         };
         App { state }
     }
+
     pub fn run() {}
 }
