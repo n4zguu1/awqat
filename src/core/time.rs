@@ -1,17 +1,13 @@
 // handle all logic related to time unit
 
-use crate::core::date::{HijriMonths, NaiveHijriDate};
-use crate::core::types::MadhabDef;
-use crate::core::types::MethodDef;
-use crate::core::types::{Coordinates, UserData};
+use crate::core::date::NaiveHijriDate;
+
+use crate::core::types::{Method, UserData};
 use crate::error::ErrorType;
 use chrono::{DateTime, NaiveDate, Utc};
 use salah::Prayer::{Asr, Dhuhr, Fajr, Isha, Maghrib, Sunrise};
-use salah::{
-    Configuration, Madhab, Method, PrayerSchedule, PrayerTimes as Prayers, TimeAdjustment,
-};
+use salah::{Configuration, PrayerSchedule, TimeAdjustment};
 use serde::{Deserialize, Serialize};
-use std::fmt::{Display, Formatter};
 
 pub struct BatchPrayers {
     base: NaiveDate,
@@ -63,11 +59,17 @@ impl UserData {
                 isha: 30,
                 ..TimeAdjustment::default()
             };
-            let mut config = Configuration::with(self.country.method, self.country.madhab);
+            let mut config = Configuration::with(
+                self.country.method.to_crate(),
+                self.country.madhab.to_crate(),
+            );
             config.adjustments = adjustment;
             config
         } else {
-            Configuration::with(self.country.method, self.country.madhab)
+            Configuration::with(
+                self.country.method.to_crate(),
+                self.country.madhab.to_crate(),
+            )
         };
         let location = salah::Coordinates::new(
             self.city.coordinates.latitude,
@@ -88,8 +90,6 @@ impl UserData {
 
         Ok(PrayerTimes::new(fajr, sunrise, dhuhr, asr, maghrib, isha))
     }
-    pub fn calculate_batch(&self) {
-
-    }
+    pub fn calculate_batch(&self) {}
     pub fn calculate_with_angles() {}
 }

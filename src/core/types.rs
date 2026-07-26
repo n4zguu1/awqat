@@ -1,4 +1,4 @@
-use salah::{Madhab, Method};
+use salah::{Madhab as MadhabCrate, Method as MethodCrate};
 use serde::{Deserialize, Serialize};
 
 pub static APP_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -9,25 +9,36 @@ pub struct UserData {
     pub region: Region,
     pub city: City,
 }
+
 #[derive(Serialize, Deserialize)]
 
 pub struct Country {
     pub iso2: String, // unique id
     pub name: String,
-    #[serde(with = "MadhabDef")]
     pub madhab: Madhab,
-    #[serde(with = "MethodDef")]
     pub method: Method,
 }
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "Madhab")]
-pub enum MadhabDef {
+pub enum Madhab {
     Hanafi,
     Shafi,
 }
-#[derive(Serialize, Deserialize)]
-#[serde(remote = "Method")]
-pub enum MethodDef {
+impl Madhab {
+    pub fn from_crate(m: &MadhabCrate) -> Self {
+        match m {
+            MadhabCrate::Hanafi => Madhab::Hanafi,
+            MadhabCrate::Shafi => Madhab::Shafi,
+        }
+    }
+    pub fn to_crate(&self) -> MadhabCrate {
+        match self {
+            Madhab::Hanafi => MadhabCrate::Hanafi,
+            Madhab::Shafi => MadhabCrate::Shafi,
+        }
+    }
+}
+#[derive(Serialize, Deserialize, PartialEq)]
+pub enum Method {
     MuslimWorldLeague,
     Egyptian,
     Karachi,
@@ -41,6 +52,42 @@ pub enum MethodDef {
     Turkey,
     Tehran,
     Other,
+}
+impl Method {
+    pub fn from_crate(m: &MethodCrate) -> Self {
+        match m {
+            MethodCrate::MuslimWorldLeague => Method::MuslimWorldLeague,
+            MethodCrate::Egyptian => Method::Egyptian,
+            MethodCrate::Karachi => Method::Karachi,
+            MethodCrate::UmmAlQura => Method::UmmAlQura,
+            MethodCrate::Dubai => Method::Dubai,
+            MethodCrate::MoonsightingCommittee => Method::MoonsightingCommittee,
+            MethodCrate::NorthAmerica => Method::NorthAmerica,
+            MethodCrate::Kuwait => Method::Kuwait,
+            MethodCrate::Qatar => Method::Qatar,
+            MethodCrate::Singapore => Method::Singapore,
+            MethodCrate::Turkey => Method::Turkey,
+            MethodCrate::Tehran => Method::Tehran,
+            MethodCrate::Other => Method::Other,
+        }
+    }
+    pub fn to_crate(&self) -> MethodCrate {
+        match self {
+            Method::MuslimWorldLeague => MethodCrate::MuslimWorldLeague,
+            Method::Egyptian => MethodCrate::Egyptian,
+            Method::Karachi => MethodCrate::Karachi,
+            Method::UmmAlQura => MethodCrate::UmmAlQura,
+            Method::Dubai => MethodCrate::Dubai,
+            Method::MoonsightingCommittee => MethodCrate::MoonsightingCommittee,
+            Method::NorthAmerica => MethodCrate::NorthAmerica,
+            Method::Kuwait => MethodCrate::Kuwait,
+            Method::Qatar => MethodCrate::Qatar,
+            Method::Singapore => MethodCrate::Singapore,
+            Method::Turkey => MethodCrate::Turkey,
+            Method::Tehran => MethodCrate::Tehran,
+            Method::Other => MethodCrate::Other,
+        }
+    }
 }
 impl Country {
     pub fn new(iso2: String, name: String, madhab: Madhab, method: Method) -> Self {
@@ -81,12 +128,11 @@ impl City {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq,Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Clone)]
 pub struct Coordinates {
     pub latitude: f64,
     pub longitude: f64,
 }
-
 
 impl Coordinates {
     pub fn new(latitude: f64, longitude: f64) -> Self {
@@ -133,6 +179,7 @@ impl UserData {
     }
 }
 
+pub struct Config {}
 #[cfg(test)]
 mod tests {
     use crate::core::types::Timezone;
@@ -143,7 +190,4 @@ mod tests {
         assert_eq!(timezone.to_utc_format(), "UTC-06:00".to_string());
         assert_eq!(timezone2.to_utc_format(), "UTC+04:30".to_string())
     }
-}
-pub struct Config {
-    
 }

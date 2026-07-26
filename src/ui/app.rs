@@ -4,3 +4,10 @@
 // the country , method of calculation.
 // remaining time (calculated)
 // time calculations need to be carefully handled, to avoid divergence between user desktop clock time and app shown clock
+
+use chrono::{DateTime, Local};
+
+struct App {
+    date_time: DateTime<Local>,
+
+}

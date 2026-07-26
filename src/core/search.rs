@@ -7,9 +7,8 @@
 // the duplicates, what if there is two cities named with same name
 
 use crate::error::ErrorType;
-use crate::core::types::{City, Coordinates, Country, UserData, Region, Timezone};
+use crate::core::types::{City, Coordinates, Country, UserData, Region, Timezone, Method, Madhab};
 use rusqlite::{Connection, params};
-use salah::{Madhab, Method};
 use std::collections::HashMap;
 // we use FTS5 , found out that rusqlite supports it out of the box
 // DEFINITION:

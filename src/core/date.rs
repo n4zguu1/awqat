@@ -11,10 +11,9 @@
 // make the user mannual configure the hijri date based on local data
 
 use crate::error::ErrorType;
-use chrono::{Datelike, Month, NaiveDate};
+use chrono::{Datelike, NaiveDate};
 use icu_calendar::Date;
 use icu_calendar::cal::Hijri;
-use salah::PrayerTimes;
 use std::fmt::{Display, Formatter};
 
 pub enum HijriMonths {
