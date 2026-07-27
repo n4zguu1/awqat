@@ -11,6 +11,7 @@ use crate::core::time::PrayerTimes;
 use crate::core::types::UserData;
 use crate::error::ErrorType;
 use chrono::{DateTime, Local};
+use ratatui::DefaultTerminal;
 
 pub struct RunningData {
     pub date_time: DateTime<Local>,
@@ -18,7 +19,6 @@ pub struct RunningData {
     pub hijri_date: NaiveHijriDate,
     pub prayer_times: PrayerTimes,
     pub city: String,
-
 }
 
 impl RunningData {
@@ -36,7 +36,6 @@ impl RunningData {
             hijri_date,
         })
     }
-
 }
 pub struct SetupData {
     pub city_input: String,
@@ -50,16 +49,18 @@ pub enum AppState {
 }
 pub struct App {
     pub state: AppState,
+    pub exit: bool,
 }
 impl App {
     // maps all errors to Error state so they can be handled in the UI, instead of return them as result
-    fn new() -> Self {
+    pub fn new() -> Self {
         // check config to determine setup from running
         let file_path = match get_config_path() {
             Ok(path) => path,
             Err(e) => {
                 return App {
                     state: AppState::Error(e),
+                    exit: false,
                 };
             }
         };
@@ -70,6 +71,7 @@ impl App {
                     Err(e) => {
                         return App {
                             state: AppState::Error(e),
+                            exit: false,
                         };
                     }
                 };
@@ -78,8 +80,15 @@ impl App {
             Err(ErrorType::ConfigFileNotFound) => todo!(),
             Err(e) => AppState::Error(e),
         };
-        App { state }
+        App { state, exit: false }
     }
 
-    pub fn run() {}
+    pub fn run(&mut self, terminal: &mut DefaultTerminal) -> Result<(), ErrorType> {
+        while !self.exit {
+            terminal.draw(|frame| self.draw(frame))?;
+            self.handle_event()?;
+            self.handle_tick()
+        }
+        Ok(())
+    }
 }
