@@ -4,7 +4,7 @@ use crate::core::date::NaiveHijriDate;
 
 use crate::core::types::{Method, UserData};
 use crate::error::ErrorType;
-use chrono::{DateTime, NaiveDate, Utc};
+use chrono::{DateTime, Local, NaiveDate, Utc};
 use salah::Prayer::{Asr, Dhuhr, Fajr, Isha, Maghrib, Sunrise};
 use salah::{Configuration, PrayerSchedule, TimeAdjustment};
 use serde::{Deserialize, Serialize};
@@ -18,7 +18,7 @@ pub struct PrayerTimes {
     pub sunrise: DateTime<Utc>,
     pub dhuhr: DateTime<Utc>,
     pub asr: DateTime<Utc>,
-    pub maghreb: DateTime<Utc>,
+    pub maghrib: DateTime<Utc>,
     pub isha: DateTime<Utc>,
 }
 
@@ -36,11 +36,48 @@ impl PrayerTimes {
             sunrise,
             dhuhr,
             asr,
-            maghreb,
+            maghrib: maghreb,
             isha,
         }
     }
-    pub fn display_with_offset(&self, offset: i64) {}
+    pub fn as_string_with_timezone(&self) -> [String; 6] {
+        let fajr = self
+            .fajr
+            .with_timezone(&Local)
+            .format("%I:%M %p")
+            .to_string();
+        let sunrise = self
+            .sunrise
+            .with_timezone(&Local)
+            .format("%I:%M %p")
+            .to_string();
+        let dhuhr = self
+            .dhuhr
+            .with_timezone(&Local)
+            .format("%I:%M %p")
+            .to_string();
+        let asr = self
+            .asr
+            .with_timezone(&Local)
+            .format("%I:%M %p")
+            .to_string();
+        let maghrib = self
+            .maghrib
+            .with_timezone(&Local)
+            .format("%I:%M %p")
+            .to_string();
+        let isha = self
+            .isha
+            .with_timezone(&Local)
+            .format("%I:%M %p")
+            .to_string();
+
+        [fajr, sunrise, dhuhr, asr, maghrib, isha]
+    }
+    pub fn remaining(&self) -> String {
+        // we can push all times to a vector and call sort,
+        todo!()
+    }
 }
 
 impl UserData {
@@ -51,7 +88,7 @@ impl UserData {
         // special case for UmmAlQura method , where they calculate isha time little different based on Islamic month
         // the method uses fixed time interval between maghreb and isha, where in ramadan isha = maghreb + 120 min. in other months isha= maghreb + 90
         // the lib already calcualates the addjustment on other months, we need ajustement for ramadan
-        let hijri_date = NaiveHijriDate::from_gregorian_to_ummalqura(&naive_date)?;
+        let hijri_date = NaiveHijriDate::from_gregorian_to_ummalqura(naive_date)?;
         // explicitly adjust for Ramadan
         let params = if hijri_date.month == 9 && self.country.method == Method::UmmAlQura {
             // special case for isha, +30 min then the usual
