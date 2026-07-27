@@ -25,4 +25,5 @@ impl App {
             _ => {}
         }
     }
+    pub fn handle_config(&mut self) {}
 }

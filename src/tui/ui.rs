@@ -1,10 +1,10 @@
 use crate::tui::app::{App, AppState, RunningData};
+use ratatui::Frame;
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Alignment, Constraint, Layout, Rect};
 use ratatui::style::Color;
 use ratatui::text::Line;
 use ratatui::widgets::{Block, BorderType, Borders, Cell, Row, Table, TitlePosition, Widget};
-use ratatui::Frame;
 use std::vec;
 
 impl App {
@@ -53,6 +53,16 @@ impl RunningData {
     fn draw_main(&self, main_area: Rect, buffer: &mut Buffer) {
         let time = self.prayer_times.as_string_with_timezone();
         let time_now = self.date_time.time().format("%I:%M:%S %P").to_string();
+        let method = self.method.to_string();
+        let date = self
+            .date_time
+            .date_naive()
+            .format("%A %-d %B %C%y")
+            .to_string();
+        let date_hijri = format!(
+            "{} {} {}",
+            self.hijri_date.day, self.hijri_date.month_name, self.hijri_date.year
+        );
         let [
         next_prayer_area,
         clock_area,
@@ -98,11 +108,19 @@ impl RunningData {
         let today_prayers = Table::new(row, column_width)
             .header(header)
             .style(Color::White);
-        let meta_data_txt = Line::raw("Ummalquarh").alignment(Alignment::Left);
+        let [method_area, date_area, hijri_date_area] =
+            Layout::vertical(vec![Constraint::Length(1); 3]).areas(meta_data_area);
+        let method_txt = Line::from(method);
+        let date_txt = Line::from(date);
+        let hijri_date_txt = Line::from(date_hijri);
+
+
+        method_txt.render(method_area, buffer);
+        date_txt.render(date_area, buffer);
+        hijri_date_txt.render(hijri_date_area, buffer);
         next_prayer_txt.render(next_prayer_area, buffer);
         clock_txt.render(clock_area, buffer);
         day_prayers_block.render(day_prayers_area, buffer);
-        meta_data_txt.render(meta_data_area, buffer);
         today_prayers.render(day_prayers_inner, buffer);
     }
     fn draw_table(&self, table_area: Rect, buffer: &mut Buffer) {}
