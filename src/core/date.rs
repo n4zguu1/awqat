@@ -14,21 +14,22 @@ use crate::error::ErrorType;
 use chrono::{Datelike, NaiveDate};
 use icu_calendar::Date;
 use icu_calendar::cal::Hijri;
+use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
-
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum HijriMonths {
-    Muharram = 1,
-    Safar = 2,
-    RabiAlAwwal = 3,
-    RabiAlThani = 4,
-    JumadaAlAwwal = 5,
-    JumadaAlThani = 6,
-    Rajab = 7,
-    Shaban = 8,
-    Ramadan = 9,
-    Shawwal = 10,
-    DhuAlQadah = 11,
-    DhuAlHijjah = 12,
+    Muharram,
+    Safar,
+    RabiAlAwwal,
+    RabiAlThani,
+    JumadaAlAwwal,
+    JumadaAlThani,
+    Rajab,
+    Shaban,
+    Ramadan,
+    Shawwal,
+    DhuAlQadah,
+    DhuAlHijjah,
 }
 impl HijriMonths {
     pub fn from_number(month: u8) -> Option<Self> {
@@ -70,6 +71,7 @@ impl Display for HijriMonths {
     }
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct NaiveHijriDate {
     pub year: i32,
     pub month_name: HijriMonths,

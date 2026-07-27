@@ -1,127 +1,186 @@
-use crate::tui::app::{App, AppState, RunningData};
+use crate::tui::app::{App, AppState, RunningData, SetupData};
 use ratatui::Frame;
-use ratatui::buffer::Buffer;
 use ratatui::layout::{Alignment, Constraint, Layout, Rect};
-use ratatui::style::Color;
-use ratatui::text::Line;
-use ratatui::widgets::{Block, BorderType, Borders, Cell, Row, Table, TitlePosition, Widget};
-use std::vec;
+use ratatui::style::{Color, Modifier, Style};
+use ratatui::text::{Line, Span};
+use ratatui::widgets::{Cell, Row, Table,
+};
+use tui_big_text::{BigText, PixelSize};
+
+const PRAYER_NAMES: &[&str] = &["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"];
 
 impl App {
-    // the app should have max/min dimensions
-    // when min dimensions is hit, show another screen
-    // when max hit, the space get filled with another color or style.
-    // the main content should stick to vertical center and horizontal center
     pub fn draw(&self, frame: &mut Frame) {
         match &self.state {
-            AppState::Running(running_data) => running_data.draw(frame.area(), frame.buffer_mut()),
-            AppState::Error(error) => {}
-            AppState::Settings => {}
-            AppState::Setup(setup_data) => {}
-            AppState::Loading => {}
+            AppState::Running(data) => data.draw(frame),
+            AppState::Setup(data) => data.draw(frame),
+            AppState::Error(e) => Self::draw_error(frame, e),
         }
     }
 
-    fn handle_events() {}
+    fn draw_error(frame: &mut Frame, e: &crate::error::ErrorType) {}
+}
+
+impl SetupData {
+    fn draw(&self, frame: &mut Frame) {}
 }
 
 impl RunningData {
-    fn draw(&self, area: Rect, buffer: &mut Buffer) {
-        let [main, table] =
-            Layout::vertical(vec![Constraint::Percentage(30), Constraint::Percentage(70)])
-                .areas(area);
-        let main_block = Block::new()
-            .title("today")
-            .title_position(TitlePosition::Top)
-            .borders(Borders::ALL)
-            .title_alignment(Alignment::Left)
-            .border_type(BorderType::Rounded);
-        let inner_main = main_block.inner(main);
+    fn draw(&self, frame: &mut Frame) {
+        let area = frame.area();
 
-        let all_days_block = Block::new()
-            .title("all days")
-            .title_position(TitlePosition::Top)
-            .borders(Borders::ALL)
-            .title_alignment(Alignment::Left)
-            .border_type(BorderType::Rounded);
-        let inner_all_days = all_days_block.inner(table);
-        main_block.render(main, buffer);
-        all_days_block.render(table, buffer);
-        self.draw_main(inner_main, buffer);
-        self.draw_table(inner_all_days, buffer);
+        let [header_area, hero_area, sep_area, table_area, footer_area] = Layout::vertical([
+            Constraint::Length(1),
+            Constraint::Length(16),
+            Constraint::Length(1),
+            Constraint::Min(8),
+            Constraint::Length(1),
+        ])
+            .areas(area);
+
+        self.draw_header(frame, header_area);
+        self.draw_hero(frame, hero_area);
+        self.draw_separator(frame, sep_area);
+        self.draw_monthly_table(frame, table_area);
+        self.draw_footer(frame, footer_area);
     }
-    fn draw_main(&self, main_area: Rect, buffer: &mut Buffer) {
-        let time = self.prayer_times.as_string_with_timezone();
+
+    fn draw_header(&self, frame: &mut Frame, area: Rect) {
+        let line = Line::from(vec![
+            Span::styled(
+                " awqat",
+                Style::default()
+                    .fg(Color::Cyan)
+                    .add_modifier(Modifier::BOLD),
+            ),
+            Span::styled(" v", Style::default().fg(Color::DarkGray)),
+            Span::styled(
+                env!("CARGO_PKG_VERSION"),
+                Style::default().fg(Color::DarkGray),
+            ),
+        ]);
+        frame.render_widget(line, area);
+    }
+
+    fn draw_hero(&self, frame: &mut Frame, area: Rect) {
+        let [clock_area, prayers_area, meta_area] = Layout::vertical([
+            Constraint::Length(7),
+            Constraint::Length(5),
+            Constraint::Fill(1),
+        ])
+            .areas(area);
+
+        self.draw_clock(frame, clock_area);
+        self.draw_prayers(frame, prayers_area);
+        self.draw_meta(frame, meta_area);
+    }
+
+    fn draw_clock(&self, frame: &mut Frame, area: Rect) {
         let time_now = self.date_time.time().format("%I:%M:%S %P").to_string();
-        let method = self.method.to_string();
-        let date = self
+        let big_clock = BigText::builder()
+            .pixel_size(PixelSize::HalfHeight)
+            .style(Style::new().white())
+            .centered()
+            .lines(vec![Line::from(time_now)])
+            .build();
+        frame.render_widget(big_clock, area);
+    }
+
+    fn draw_prayers(&self, frame: &mut Frame, area: Rect) {
+        let times = self.prayer_times.as_string_with_timezone();
+        let next_idx = self.next_prayer_index();
+
+        let header = Row::new(PRAYER_NAMES.iter().enumerate().map(|(i, n)| {
+            let style = if Some(i) == next_idx {
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD)
+            } else {
+                Style::default().fg(Color::DarkGray)
+            };
+            Cell::from(Line::from(*n).centered()).style(style)
+        }));
+
+        let row = Row::new(times.iter().enumerate().map(|(i, t)| {
+            let style = if Some(i) == next_idx {
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD)
+            } else {
+                Style::default().fg(Color::White)
+            };
+            Cell::from(Line::from(t.as_str()).centered()).style(style)
+        }));
+
+        let widths = vec![Constraint::Ratio(1, 6); 6];
+        let table = Table::new(vec![row], widths).header(header);
+        frame.render_widget(table, area);
+    }
+
+    fn draw_meta(&self, frame: &mut Frame, area: Rect) {
+        let date_str = self
             .date_time
             .date_naive()
-            .format("%A %-d %B %C%y")
+            .format("%A, %-d %B %Y")
             .to_string();
-        let date_hijri = format!(
+        let hijri_str = format!(
             "{} {} {}",
             self.hijri_date.day, self.hijri_date.month_name, self.hijri_date.year
         );
-        let [
-        next_prayer_area,
-        clock_area,
-        day_prayers_area,
-        meta_data_area,
-        ] = Layout::vertical(vec![
-            Constraint::Length(1),
-            Constraint::Length(4),
-            Constraint::Fill(1),
-            Constraint::Length(3),
-        ])
-            .areas(main_area);
 
-        let next_prayer_txt = Line::raw("Maghreb at 2 hours and 31 minutes")
-            .alignment(Alignment::Left)
-            .style(Color::Yellow);
+        let [left_area, right_area] =
+            Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)])
+                .areas(area);
 
-        let clock_txt = Line::raw(time_now).alignment(Alignment::Left);
-
-        let day_prayers_block = Block::new()
-            .borders(Borders::BOTTOM | Borders::TOP)
-            .border_type(BorderType::Plain);
-        let day_prayers_inner = day_prayers_block.inner(day_prayers_area);
-        // table defintion
-        let header = Row::new(vec![
-            Cell::from(Line::from("Fajr").centered()),
-            Cell::from(Line::from("Sunrise").centered()),
-            Cell::from(Line::from("Dhuhr").centered()),
-            Cell::from(Line::from("Asr").centered()),
-            Cell::from(Line::from("Maghrib").centered()),
-            Cell::from(Line::from("Isha").centered()),
+        let left = Line::from(vec![
+            Span::styled(
+                &self.city,
+                Style::default()
+                    .fg(Color::Cyan)
+                    .add_modifier(Modifier::BOLD),
+            ),
+            Span::raw("  "),
+            Span::styled(&self.method, Style::default().fg(Color::DarkGray)),
         ]);
+        let right = Line::from(vec![
+            Span::styled(&date_str, Style::default().fg(Color::White)),
+            Span::raw("  "),
+            Span::styled(&hijri_str, Style::default().fg(Color::Yellow)),
+        ])
+            .alignment(Alignment::Right);
 
-        let row = [Row::new(vec![
-            Cell::from(Line::from(time[0].clone()).centered()),
-            Cell::from(Line::from(time[1].clone()).centered()),
-            Cell::from(Line::from(time[2].clone()).centered()),
-            Cell::from(Line::from(time[3].clone()).centered()),
-            Cell::from(Line::from(time[4].clone()).centered()),
-            Cell::from(Line::from(time[5].clone()).centered()),
-        ])];
-        let column_width = vec![Constraint::Ratio(1, 6); 6];
-        let today_prayers = Table::new(row, column_width)
-            .header(header)
-            .style(Color::White);
-        let [method_area, date_area, hijri_date_area] =
-            Layout::vertical(vec![Constraint::Length(1); 3]).areas(meta_data_area);
-        let method_txt = Line::from(method);
-        let date_txt = Line::from(date);
-        let hijri_date_txt = Line::from(date_hijri);
-
-
-        method_txt.render(method_area, buffer);
-        date_txt.render(date_area, buffer);
-        hijri_date_txt.render(hijri_date_area, buffer);
-        next_prayer_txt.render(next_prayer_area, buffer);
-        clock_txt.render(clock_area, buffer);
-        day_prayers_block.render(day_prayers_area, buffer);
-        today_prayers.render(day_prayers_inner, buffer);
+        frame.render_widget(left, left_area);
+        frame.render_widget(right, right_area);
     }
-    fn draw_table(&self, table_area: Rect, buffer: &mut Buffer) {}
+
+    fn draw_separator(&self, frame: &mut Frame, area: Rect) {
+        let line = Line::from(Span::styled(
+            "─".repeat(area.width as usize),
+            Style::default().fg(Color::DarkGray),
+        ));
+        frame.render_widget(line, area);
+    }
+
+    fn draw_monthly_table(&self, frame: &mut Frame, area: Rect) {}
+
+    fn draw_footer(&self, frame: &mut Frame, area: Rect) {
+        let help = Line::from(Span::styled(
+            " q/Ctrl+C: quit  j/k/\u{2195}/\u{2191}: scroll  PgUp/PgDn: page  g/G: top/bottom",
+            Style::default().fg(Color::DarkGray),
+        ));
+        frame.render_widget(help, area);
+    }
+
+    fn next_prayer_index(&self) -> Option<usize> {
+        let now = self.date_time.time();
+        let times = [
+            self.prayer_times.fajr.time(),
+            self.prayer_times.sunrise.time(),
+            self.prayer_times.dhuhr.time(),
+            self.prayer_times.asr.time(),
+            self.prayer_times.maghrib.time(),
+            self.prayer_times.isha.time(),
+        ];
+        times.iter().position(|t| *t > now)
+    }
 }

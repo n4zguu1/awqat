@@ -1,60 +1,88 @@
-// data needed to render are
-// current time,date and hijri date
-// prayer times for today, and this month. i just need to fetch month dates and add logic to preview for today i hve the required data for that
-// the country , method of calculation.
-// remaining time (calculated)
-// time calculations need to be carefully handled, to avoid divergence between user desktop clock time and app shown clock
-
 use crate::core::date::NaiveHijriDate;
-use crate::core::storage::{get_config_path, load_config};
-use crate::core::time::PrayerTimes;
+use crate::core::storage::{db_connection, get_config_path, load_config};
+use crate::core::time::DayPrayerTimes;
 use crate::core::types::UserData;
 use crate::error::ErrorType;
-use chrono::{DateTime, Local};
+use chrono::{DateTime, Local, NaiveDate};
 use ratatui::DefaultTerminal;
+use rusqlite::Connection;
+use std::time::Instant;
+
+const MONTHS_THRESHOLD: i32 = 2;
+
+pub struct PrayerTimesDay {
+    pub date: NaiveDate,
+    pub hijri: NaiveHijriDate,
+    pub prayers: DayPrayerTimes,
+}
 
 pub struct RunningData {
     pub date_time: DateTime<Local>,
     pub method: String,
     pub hijri_date: NaiveHijriDate,
-    pub prayer_times: PrayerTimes,
+    pub prayer_times: DayPrayerTimes,
     pub city: String,
+    pub user_data: UserData,
 }
 
 impl RunningData {
-    fn new(data: &UserData) -> Result<Self, ErrorType> {
+    pub fn new(data: UserData) -> Result<Self, ErrorType> {
         let date_time = Local::now();
         let prayer_times = data.calculate(&date_time.date_naive())?;
         let method = data.country.method.clone().to_string();
         let hijri_date = NaiveHijriDate::from_gregorian_to_ummalqura(&date_time.date_naive())?;
         let city = data.city.name.clone();
-        Ok(RunningData {
+
+        let running = RunningData {
             date_time,
             method,
             prayer_times,
             city,
             hijri_date,
-        })
+            user_data: data,
+        };
+
+        Ok(running)
     }
 }
+
 pub struct SetupData {
-    pub city_input: String,
+    pub query: String,
+    pub cursor: usize,
+    pub results: Vec<(i64, String)>,
+    pub selected: usize,
+    pub last_input: Option<Instant>,
+    pub search_triggered: bool,
+    pub db: Connection,
 }
+
+impl Default for SetupData {
+    fn default() -> Self {
+        Self {
+            query: String::new(),
+            cursor: 0,
+            results: Vec::new(),
+            selected: 0,
+            last_input: None,
+            search_triggered: false,
+            db: db_connection().expect("failed to open db"),
+        }
+    }
+}
+
 pub enum AppState {
     Running(RunningData),
     Setup(SetupData),
-    Loading,
-    Settings,
     Error(ErrorType),
 }
+
 pub struct App {
     pub state: AppState,
     pub exit: bool,
 }
+
 impl App {
-    // maps all errors to Error state so they can be handled in the UI, instead of return them as result
     pub fn new() -> Self {
-        // check config to determine setup from running
         let file_path = match get_config_path() {
             Ok(path) => path,
             Err(e) => {
@@ -64,22 +92,16 @@ impl App {
                 };
             }
         };
+
         let state = match load_config::<UserData>(&file_path) {
-            Ok(data) => {
-                let running_data = match RunningData::new(&data) {
-                    Ok(data) => data,
-                    Err(e) => {
-                        return App {
-                            state: AppState::Error(e),
-                            exit: false,
-                        };
-                    }
-                };
-                AppState::Running(running_data)
-            }
-            Err(ErrorType::ConfigFileNotFound) => todo!(),
+            Ok(data) => match RunningData::new(data) {
+                Ok(running) => AppState::Running(running),
+                Err(e) => AppState::Error(e),
+            },
+            Err(ErrorType::ConfigFileNotFound) => AppState::Setup(SetupData::default()),
             Err(e) => AppState::Error(e),
         };
+
         App { state, exit: false }
     }
 
@@ -87,7 +109,7 @@ impl App {
         while !self.exit {
             terminal.draw(|frame| self.draw(frame))?;
             self.handle_event()?;
-            self.handle_tick()
+            self.handle_tick();
         }
         Ok(())
     }

@@ -1,20 +1,25 @@
 // handle all logic related to time unit
 
 use crate::core::date::NaiveHijriDate;
+use std::collections::VecDeque;
 
 use crate::core::types::{Method, UserData};
 use crate::error::ErrorType;
-use chrono::{DateTime, Local, NaiveDate, Utc};
+use chrono::{DateTime, Datelike, Local, Month, Months, NaiveDate, Utc};
 use salah::Prayer::{Asr, Dhuhr, Fajr, Isha, Maghrib, Sunrise};
 use salah::{Configuration, PrayerSchedule, TimeAdjustment};
 use serde::{Deserialize, Serialize};
+
+const MONTHS_PRELOAD: u32 = 4;
 
 #[allow(dead_code)]
 pub struct BatchPrayers {
     base: NaiveDate,
 }
-#[derive(Serialize, Deserialize, Clone)]
-pub struct PrayerTimes {
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct DayPrayerTimes {
+    pub date: NaiveDate,
+    pub hijri: NaiveHijriDate,
     pub fajr: DateTime<Utc>,
     pub sunrise: DateTime<Utc>,
     pub dhuhr: DateTime<Utc>,
@@ -22,26 +27,20 @@ pub struct PrayerTimes {
     pub maghrib: DateTime<Utc>,
     pub isha: DateTime<Utc>,
 }
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct MonthPrayerTimes {
+    pub days: Vec<DayPrayerTimes>,
+    pub month: Month,
+}
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct CalendarPrayerTimes {
+    pub months: VecDeque<MonthPrayerTimes>,
+}
 
-impl PrayerTimes {
-    fn new(
-        fajr: DateTime<Utc>,
-        sunrise: DateTime<Utc>,
-        dhuhr: DateTime<Utc>,
-        asr: DateTime<Utc>,
-        maghreb: DateTime<Utc>,
-        isha: DateTime<Utc>,
-    ) -> Self {
-        Self {
-            fajr,
-            sunrise,
-            dhuhr,
-            asr,
-            maghrib: maghreb,
-            isha,
-        }
-    }
-    pub fn as_string_with_timezone(&self) -> [String; 6] {
+impl DayPrayerTimes {
+    pub fn as_string_with_timezone(&self) -> [String; 8] {
+        let date = self.date.to_string();
+        let hijri = self.hijri.to_string();
         let fajr = self
             .fajr
             .with_timezone(&Local)
@@ -73,7 +72,7 @@ impl PrayerTimes {
             .format("%I:%M %p")
             .to_string();
 
-        [fajr, sunrise, dhuhr, asr, maghrib, isha]
+        [date, hijri, fajr, sunrise, dhuhr, asr, maghrib, isha]
     }
     #[allow(dead_code)]
     pub fn remaining(&self) -> String {
@@ -85,7 +84,7 @@ impl UserData {
     // handle the specific cases
     // todo: the calculations are based on the sun hitting specif angles. some places, sun never goes down. we need to cover those in feature versions
     // the calculate isnt aware of location data.
-    pub fn calculate(&self, naive_date: &NaiveDate) -> Result<PrayerTimes, ErrorType> {
+    pub fn calculate(&self, naive_date: &NaiveDate) -> Result<DayPrayerTimes, ErrorType> {
         // special case for UmmAlQura method , where they calculate isha time little different based on Islamic month
         // the method uses fixed time interval between maghreb and isha, where in ramadan isha = maghreb + 120 min. in other months isha= maghreb + 90
         // the lib already calcualates the addjustment on other months, we need ajustement for ramadan
@@ -126,10 +125,60 @@ impl UserData {
         let maghrib = prayers.time(Maghrib);
         let isha = prayers.time(Isha);
 
-        Ok(PrayerTimes::new(fajr, sunrise, dhuhr, asr, maghrib, isha))
+        Ok(DayPrayerTimes {
+            date: *naive_date,
+            hijri: hijri_date,
+            fajr,
+            sunrise,
+            dhuhr,
+            asr,
+            maghrib,
+            isha,
+        })
     }
-    #[allow(dead_code)]
-    pub fn calculate_batch(&self) {}
+    // the key idea is to to presume a number of months to start with
+    pub fn calculate_month(&self, date: &NaiveDate) -> Result<MonthPrayerTimes, ErrorType> {
+        let month = Month::try_from(date.month() as u8).unwrap();
+        let days_nbr = month.num_days(date.year()).unwrap();
+        let mut days = Vec::with_capacity(days_nbr as usize);
+
+        for _ in 1..=days_nbr {
+            let prayer_times = self.calculate(date)?;
+            days.push(prayer_times)
+        }
+        Ok(MonthPrayerTimes { days, month })
+    }
+    // we presume a number of months, we can play with two ends popping and pushing
+    // starting from the month given
+    pub fn calculate_batch(&self, date: &NaiveDate) -> Result<CalendarPrayerTimes, ErrorType> {
+        let mut calendar = VecDeque::with_capacity(MONTHS_PRELOAD as usize);
+        let first_preload_date =
+            if let Some(date) = date.checked_sub_months(Months::new(MONTHS_PRELOAD)) {
+                date
+            } else {
+                return Err(ErrorType::DateNotFound);
+            };
+        let mut current_date = first_preload_date;
+        let d = MONTHS_PRELOAD / 2;
+        for i in 0..(MONTHS_PRELOAD + 1) {
+            let month_prayers = if let Ok(prayers) = self.calculate_month(&current_date) {
+                prayers
+            } else {
+                return Err(ErrorType::PrayerCalculationFailed);
+            };
+            if i < d {
+                calendar.push_front(month_prayers);
+            } else {
+                calendar.push_back(month_prayers);
+            }
+            current_date = if let Some(date) = current_date.checked_add_months(Months::new(1)) {
+                date
+            } else {
+                return Err(ErrorType::DateNotFound);
+            }
+        }
+        Ok(CalendarPrayerTimes { months: calendar })
+    }
     #[allow(dead_code)]
     pub fn calculate_with_angles() {}
 }

@@ -81,6 +81,7 @@ dependencies = [
  "directories",
  "icu_calendar",
  "log",
+ "num-traits",
  "ratatui",
  "rusqlite",
  "salah",
