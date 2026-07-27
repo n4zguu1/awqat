@@ -103,6 +103,7 @@ impl NaiveHijriDate {
             month_name,
         })
     }
+    #[allow(dead_code)]
     pub fn to_numeric(&self) -> NumericHijriDate<'_> {
         NumericHijriDate(self)
     }
@@ -123,6 +124,7 @@ impl NaiveHijriDate {
         NaiveHijriDate::new(year, month, day)
     }
 }
+#[allow(dead_code)]
 pub struct NumericHijriDate<'a>(&'a NaiveHijriDate);
 impl<'a> Display for NumericHijriDate<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

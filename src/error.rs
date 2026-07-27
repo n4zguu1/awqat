@@ -2,6 +2,7 @@ use icu_calendar::RangeError;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
+#[allow(dead_code)]
 pub enum ErrorType {
     #[error("The requested date was not found")]
     DateNotFound,
@@ -35,7 +36,7 @@ pub enum ErrorType {
     UnknownMadhab(String),
     #[error("Unknown method")]
     UnknownMethod(String),
-    #[error("Installing color eyer failed")]
+    #[error("Installing color eyre failed")]
     ColorEyreOperationFailed(color_eyre::Report),
     #[error("io operation failed")]
     IOError(#[from] std::io::Error),

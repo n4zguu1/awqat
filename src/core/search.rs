@@ -6,8 +6,8 @@
 // there is some issue to address
 // the duplicates, what if there is two cities named with same name
 
+use crate::core::types::{City, Coordinates, Country, Madhab, Method, Region, Timezone, UserData};
 use crate::error::ErrorType;
-use crate::core::types::{City, Coordinates, Country, UserData, Region, Timezone, Method, Madhab};
 use rusqlite::{Connection, params};
 use std::collections::HashMap;
 // we use FTS5 , found out that rusqlite supports it out of the box
@@ -16,6 +16,7 @@ use std::collections::HashMap;
 // the overhead it cuzes is it doubles down the binary size
 // slower writes and updates, cuz each update the table needs to update too
 
+#[allow(dead_code)]
 pub fn search_city(conn: &Connection, name: &str) -> Result<HashMap<i64, String>, ErrorType> {
     let query = "select rowid,name from cities_fts where name match ?1";
     let mut statement = conn
@@ -53,8 +54,8 @@ impl UserData {
         WHERE ci.Id = ?1
     ";
 
-        let (city_name, lat, lon, gmt, region_name, iso2, country_name, method_str, madhab_str) = conn
-            .query_row(sql, params![id], |row| {
+        let (city_name, lat, lon, gmt, region_name, iso2, country_name, method_str, madhab_str) =
+            conn.query_row(sql, params![id], |row| {
                 Ok((
                     row.get::<_, String>(0)?,
                     row.get::<_, f64>(1)?,
@@ -98,4 +99,3 @@ impl UserData {
         Ok(UserData::new(country, region, city))
     }
 }
-// build the Data struct

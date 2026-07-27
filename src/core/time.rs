@@ -9,10 +9,11 @@ use salah::Prayer::{Asr, Dhuhr, Fajr, Isha, Maghrib, Sunrise};
 use salah::{Configuration, PrayerSchedule, TimeAdjustment};
 use serde::{Deserialize, Serialize};
 
+#[allow(dead_code)]
 pub struct BatchPrayers {
     base: NaiveDate,
 }
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct PrayerTimes {
     pub fajr: DateTime<Utc>,
     pub sunrise: DateTime<Utc>,
@@ -74,8 +75,8 @@ impl PrayerTimes {
 
         [fajr, sunrise, dhuhr, asr, maghrib, isha]
     }
+    #[allow(dead_code)]
     pub fn remaining(&self) -> String {
-        // we can push all times to a vector and call sort,
         todo!()
     }
 }
@@ -127,6 +128,8 @@ impl UserData {
 
         Ok(PrayerTimes::new(fajr, sunrise, dhuhr, asr, maghrib, isha))
     }
+    #[allow(dead_code)]
     pub fn calculate_batch(&self) {}
+    #[allow(dead_code)]
     pub fn calculate_with_angles() {}
 }
