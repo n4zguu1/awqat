@@ -232,8 +232,7 @@ impl UserData {
                 return Err(ErrorType::DateNotFound);
             };
         let mut current_date = first_preload_date;
-        let d = MONTHS_PRELOAD / 2;
-        for i in 0..(MONTHS_PRELOAD + 1) {
+        for _ in 0..(MONTHS_PRELOAD + 1) {
             let month_prayers = if let Ok(prayers) = self.calculate_month(&current_date) {
                 prayers
             } else {
