@@ -14,6 +14,8 @@ pub fn init_core() {
     let path = Path::new("/mnt/workspace/Projects/awqat/data/trash/trash.json");
     let config = get_config_path().unwrap();
     let data: UserData = load_config(&config).unwrap();
-    let batch = data.calculate_batch(&Local::now().date_naive()).unwrap();
+    let mut batch = data.calculate_batch(&Local::now().date_naive()).unwrap();
+    data.scroll_up(&mut batch).unwrap();
     save_config(&batch, path).unwrap();
+    println!("{:?}", batch)
 }

@@ -5,11 +5,12 @@ use std::collections::VecDeque;
 
 use crate::core::types::{Method, UserData};
 use crate::error::ErrorType;
-use chrono::{DateTime, Datelike, Local, Month, Months, NaiveDate, Utc};
+use chrono::{DateTime, Datelike, Days, Local, Month, Months, NaiveDate, Utc};
 use salah::Prayer::{Asr, Dhuhr, Fajr, Isha, Maghrib, Sunrise};
 use salah::{Configuration, PrayerSchedule, TimeAdjustment};
 use serde::{Deserialize, Serialize};
 
+// preload should be even for keep the anchor month in center and better UX
 const MONTHS_PRELOAD: u32 = 4;
 
 #[allow(dead_code)]
@@ -30,7 +31,7 @@ pub struct DayPrayerTimes {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct MonthPrayerTimes {
     pub days: Vec<DayPrayerTimes>,
-    pub month: Month,
+    pub date: NaiveDate,
 }
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct CalendarPrayerTimes {
@@ -142,18 +143,25 @@ impl UserData {
         let days_nbr = month.num_days(date.year()).unwrap();
         let mut days = Vec::with_capacity(days_nbr as usize);
 
+        let mut current = if let Some(date) = NaiveDate::from_ymd_opt(date.year(), date.month(), 1)
+        {
+            date
+        } else {
+            return Err(ErrorType::DateNotFound);
+        };
         for _ in 1..=days_nbr {
-            let prayer_times = self.calculate(date)?;
-            days.push(prayer_times)
+            let prayer_times = self.calculate(&current)?;
+            days.push(prayer_times);
+            current = current.checked_add_days(Days::new(1)).unwrap()
         }
-        Ok(MonthPrayerTimes { days, month })
+        Ok(MonthPrayerTimes { days, date: *date })
     }
     // we presume a number of months, we can play with two ends popping and pushing
-    // starting from the month given
+    // the output is sorted
     pub fn calculate_batch(&self, date: &NaiveDate) -> Result<CalendarPrayerTimes, ErrorType> {
         let mut calendar = VecDeque::with_capacity(MONTHS_PRELOAD as usize);
         let first_preload_date =
-            if let Some(date) = date.checked_sub_months(Months::new(MONTHS_PRELOAD)) {
+            if let Some(date) = date.checked_sub_months(Months::new(MONTHS_PRELOAD / 2)) {
                 date
             } else {
                 return Err(ErrorType::DateNotFound);
@@ -166,11 +174,8 @@ impl UserData {
             } else {
                 return Err(ErrorType::PrayerCalculationFailed);
             };
-            if i < d {
-                calendar.push_front(month_prayers);
-            } else {
-                calendar.push_back(month_prayers);
-            }
+            calendar.push_front(month_prayers);
+
             current_date = if let Some(date) = current_date.checked_add_months(Months::new(1)) {
                 date
             } else {
@@ -178,6 +183,53 @@ impl UserData {
             }
         }
         Ok(CalendarPrayerTimes { months: calendar })
+    }
+    // popping from front of vector and pushing to back
+    pub fn scroll_down(
+        &self,
+        calendar_prayer_times: &mut CalendarPrayerTimes,
+    ) -> Result<(), ErrorType> {
+        if calendar_prayer_times.months.is_empty() {
+            return Err(ErrorType::PrayerCalculationFailed);
+        }
+        let last_month_prayers = calendar_prayer_times
+            .months
+            .back()
+            .expect("vector should always have at least two slots");
+        // we catch cases if month is January
+        let new_date =
+            if let Some(date) = last_month_prayers.date.checked_sub_months(Months::new(1)) {
+                date
+            } else {
+                return Err(ErrorType::DateNotFound);
+            };
+        let new_date_prayers = self.calculate_month(&new_date)?;
+        calendar_prayer_times.months.push_back(new_date_prayers);
+        calendar_prayer_times.months.pop_front();
+        Ok(())
+    }
+    pub fn scroll_up(
+        &self,
+        calendar_prayer_times: &mut CalendarPrayerTimes,
+    ) -> Result<(), ErrorType> {
+        if calendar_prayer_times.months.is_empty() {
+            return Err(ErrorType::PrayerCalculationFailed);
+        }
+        let last_month_prayers = calendar_prayer_times
+            .months
+            .front()
+            .expect("vector should always have at least two slots");
+        // we catch cases if month is January
+        let new_date =
+            if let Some(date) = last_month_prayers.date.checked_add_months(Months::new(1)) {
+                date
+            } else {
+                return Err(ErrorType::DateNotFound);
+            };
+        let new_date_prayers = self.calculate_month(&new_date)?;
+        calendar_prayer_times.months.push_front(new_date_prayers);
+        calendar_prayer_times.months.pop_back();
+        Ok(())
     }
     #[allow(dead_code)]
     pub fn calculate_with_angles() {}
