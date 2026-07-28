@@ -25,15 +25,16 @@ pub enum DayPrayers {
 }
 impl Display for DayPrayers {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            DayPrayers::Fajr => write!(f, "{}", "Fajr"),
-            DayPrayers::Sunrise => write!(f, "{}", "Sunrise"),
-            DayPrayers::Dhuhr => write!(f, "{}", "Dhuhr"),
-            DayPrayers::Asr => write!(f, "{}", "Asr"),
-            DayPrayers::Maghrib => write!(f, "{}", "Maghrib"),
-            DayPrayers::Isha => write!(f, "{}", "Isha"),
-            DayPrayers::FajrTomorrow => write!(f, "{}", "Fajr Tomorrow"),
-        }
+        let name = match self {
+            DayPrayers::Fajr => "Fajr",
+            DayPrayers::Sunrise => "Sunrise",
+            DayPrayers::Dhuhr => "Dhuhr",
+            DayPrayers::Asr => "Asr",
+            DayPrayers::Maghrib => "Maghrib",
+            DayPrayers::Isha => "Isha",
+            DayPrayers::FajrTomorrow => "Fajr Tomorrow",
+        };
+        f.write_str(name)
     }
 }
 #[derive(Debug)]
