@@ -1,21 +1,46 @@
 // handle all logic related to time unit
 
 use crate::core::date::NaiveHijriDate;
-use std::collections::VecDeque;
-
 use crate::core::types::{Method, UserData};
 use crate::error::ErrorType;
-use chrono::{DateTime, Datelike, Days, Local, Month, Months, NaiveDate, Utc};
-use salah::Prayer::{Asr, Dhuhr, Fajr, Isha, Maghrib, Sunrise};
+use chrono::{DateTime, Datelike, Days, Local, Month, Months, NaiveDate, TimeDelta, Utc};
+use salah::Prayer::{Asr, Dhuhr, Fajr, FajrTomorrow, Isha, Maghrib, Sunrise};
 use salah::{Configuration, PrayerSchedule, TimeAdjustment};
 use serde::{Deserialize, Serialize};
+use std::collections::VecDeque;
+use std::fmt::{Display, Formatter};
 
 // preload should be even for keep the anchor month in center and better UX
 const MONTHS_PRELOAD: u32 = 4;
+#[derive(Debug)]
 
-#[allow(dead_code)]
-pub struct BatchPrayers {
-    base: NaiveDate,
+pub enum DayPrayers {
+    Fajr,
+    Sunrise,
+    Dhuhr,
+    Asr,
+    Maghrib,
+    Isha,
+    FajrTomorrow,
+}
+impl Display for DayPrayers {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DayPrayers::Fajr => write!(f, "{}", "Fajr"),
+            DayPrayers::Sunrise => write!(f, "{}", "Sunrise"),
+            DayPrayers::Dhuhr => write!(f, "{}", "Dhuhr"),
+            DayPrayers::Asr => write!(f, "{}", "Asr"),
+            DayPrayers::Maghrib => write!(f, "{}", "Maghrib"),
+            DayPrayers::Isha => write!(f, "{}", "Isha"),
+            DayPrayers::FajrTomorrow => write!(f, "{}", "Fajr Tomorrow"),
+        }
+    }
+}
+#[derive(Debug)]
+pub struct NextPrayer {
+    pub prayer_time: DateTime<Utc>,
+    pub prayer: DayPrayers,
+    pub remaining: TimeDelta,
 }
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct DayPrayerTimes {
@@ -27,6 +52,47 @@ pub struct DayPrayerTimes {
     pub asr: DateTime<Utc>,
     pub maghrib: DateTime<Utc>,
     pub isha: DateTime<Utc>,
+    pub fajr_tomorrow: DateTime<Utc>,
+}
+impl DayPrayerTimes {
+    fn time(&self, prayer: &DayPrayers) -> DateTime<Utc> {
+        match prayer {
+            DayPrayers::Fajr => self.fajr,
+            DayPrayers::Sunrise => self.sunrise,
+            DayPrayers::Dhuhr => self.dhuhr,
+            DayPrayers::Asr => self.asr,
+            DayPrayers::Maghrib => self.maghrib,
+            DayPrayers::Isha => self.isha,
+            DayPrayers::FajrTomorrow => self.fajr_tomorrow,
+        }
+    }
+
+    pub fn next_prayer(&self, time: &DateTime<Utc>) -> NextPrayer {
+        let next = if self.time(&DayPrayers::Fajr) >= *time {
+            DayPrayers::Fajr
+        } else if self.time(&DayPrayers::Sunrise) >= *time {
+            DayPrayers::Sunrise
+        } else if self.time(&DayPrayers::Dhuhr) >= *time {
+            DayPrayers::Dhuhr
+        } else if self.time(&DayPrayers::Asr) >= *time {
+            DayPrayers::Asr
+        } else if self.time(&DayPrayers::Maghrib) >= *time {
+            DayPrayers::Maghrib
+        } else if self.time(&DayPrayers::Isha) >= *time {
+            DayPrayers::Isha
+        } else if self.time(&DayPrayers::FajrTomorrow) >= *time {
+            DayPrayers::FajrTomorrow
+        } else {
+            panic!("failed to calculate next prayer time");
+        };
+        let next_prayer_time = self.time(&next);
+        let remaining = *time - next_prayer_time;
+        NextPrayer {
+            prayer: next,
+            prayer_time: next_prayer_time,
+            remaining,
+        }
+    }
 }
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct MonthPrayerTimes {
@@ -75,10 +141,6 @@ impl DayPrayerTimes {
 
         [date, hijri, fajr, sunrise, dhuhr, asr, maghrib, isha]
     }
-    #[allow(dead_code)]
-    pub fn remaining(&self) -> String {
-        todo!()
-    }
 }
 
 impl UserData {
@@ -125,6 +187,7 @@ impl UserData {
         let asr = prayers.time(Asr);
         let maghrib = prayers.time(Maghrib);
         let isha = prayers.time(Isha);
+        let fajr_tomorrow = prayers.time(FajrTomorrow);
 
         Ok(DayPrayerTimes {
             date: *naive_date,
@@ -135,6 +198,7 @@ impl UserData {
             asr,
             maghrib,
             isha,
+            fajr_tomorrow,
         })
     }
     // the key idea is to to presume a number of months to start with
