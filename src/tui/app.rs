@@ -1,45 +1,56 @@
 use crate::core::date::NaiveHijriDate;
 use crate::core::storage::{db_connection, get_config_path, load_config};
-use crate::core::time::DayPrayerTimes;
-use crate::core::types::UserData;
+use crate::core::time::{CalendarPrayerTimes, DayPrayerTimes, NextPrayer, time_with_offset};
+use crate::core::types::{Coordinates, UserData};
 use crate::error::ErrorType;
-use chrono::{DateTime, Local, NaiveDate};
+use chrono::{DateTime, Utc};
+use chrono_tz::Tz;
 use ratatui::DefaultTerminal;
 use rusqlite::Connection;
 use std::time::Instant;
 
 const MONTHS_THRESHOLD: i32 = 2;
 
-pub struct PrayerTimesDay {
-    pub date: NaiveDate,
-    pub hijri: NaiveHijriDate,
-    pub prayers: DayPrayerTimes,
-}
-
 pub struct RunningData {
-    pub date_time: DateTime<Local>,
+    pub date_time: DateTime<Tz>,
     pub method: String,
     pub hijri_date: NaiveHijriDate,
     pub prayer_times: DayPrayerTimes,
+    pub calendar: CalendarPrayerTimes,
     pub city: String,
-    pub user_data: UserData,
+    pub country: String,
+    pub utc_offset: i64,
+    pub coordinates: Coordinates,
+    pub next_prayer: NextPrayer,
 }
-
 impl RunningData {
     pub fn new(data: UserData) -> Result<Self, ErrorType> {
-        let date_time = Local::now();
+        let date_time = time_with_offset(
+            &data.city.coordinates,
+            data.city.timezone.utc_offset,
+            Utc::now(),
+        );
         let prayer_times = data.calculate(&date_time.date_naive())?;
+        let calendar = data.calculate_batch(&date_time.date_naive())?;
         let method = data.country.method.clone().to_string();
         let hijri_date = NaiveHijriDate::from_gregorian_to_ummalqura(&date_time.date_naive())?;
         let city = data.city.name.clone();
+        let country = data.country.name;
+        let utc_offset = data.city.timezone.utc_offset;
+        let coordinates = data.city.coordinates;
+        let next_prayer = prayer_times.next_prayer(&date_time);
 
         let running = RunningData {
             date_time,
             method,
             prayer_times,
+            calendar,
             city,
             hijri_date,
-            user_data: data,
+            utc_offset,
+            country,
+            coordinates,
+            next_prayer,
         };
 
         Ok(running)
@@ -106,6 +117,16 @@ impl App {
     }
 
     pub fn run(&mut self, terminal: &mut DefaultTerminal) -> Result<(), ErrorType> {
+        crossterm::execute!(terminal.backend_mut(), crossterm::event::EnableMouseCapture)?;
+        let result = self.run_inner(terminal);
+        crossterm::execute!(
+            terminal.backend_mut(),
+            crossterm::event::DisableMouseCapture
+        )?;
+        result
+    }
+
+    fn run_inner(&mut self, terminal: &mut DefaultTerminal) -> Result<(), ErrorType> {
         while !self.exit {
             terminal.draw(|frame| self.draw(frame))?;
             self.handle_event()?;
