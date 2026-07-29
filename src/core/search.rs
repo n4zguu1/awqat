@@ -16,6 +16,38 @@ use std::collections::HashMap;
 // the overhead it cuzes is it doubles down the binary size
 // slower writes and updates, cuz each update the table needs to update too
 
+pub fn search_city_details(
+    conn: &Connection,
+    name: &str,
+) -> Result<Vec<(i64, String, String, String)>, ErrorType> {
+    let query = "
+        SELECT c.Id, c.Name, r.Name, co.Name
+        FROM cities_fts fts
+        JOIN Cities c ON fts.rowid = c.Id
+        JOIN Regions r ON c.RegionId = r.Id
+        JOIN Countries co ON r.CountryId = co.Id
+        WHERE fts.name MATCH ?1
+        LIMIT 20
+    ";
+    let mut statement = conn
+        .prepare(query)
+        .map_err(ErrorType::SqliteOperationFailed)?;
+    let results = statement
+        .query_map(params![format!("{}*", name)], |row| {
+            let id = row.get::<usize, i64>(0)?;
+            let city = row.get::<usize, String>(1)?;
+            let region = row.get::<usize, String>(2)?;
+            let country = row.get::<usize, String>(3)?;
+            Ok((id, city, region, country))
+        })
+        .map_err(ErrorType::SqliteOperationFailed)?;
+    let mut vec = Vec::new();
+    for r in results {
+        vec.push(r.map_err(ErrorType::SqliteOperationFailed)?);
+    }
+    Ok(vec)
+}
+
 pub fn search_city(conn: &Connection, name: &str) -> Result<HashMap<i64, String>, ErrorType> {
     let query = "select rowid,name from cities_fts where name match ?1";
     let mut statement = conn
