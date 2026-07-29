@@ -173,10 +173,10 @@ impl RunningData {
         if let Some(day) = self.get_day(new_cursor) {
             self.table_cursor_date = day.date;
         }
-        if new_offset != offset {
-            if let Some(day) = self.get_day(new_offset) {
-                self.table_offset_date = day.date;
-            }
+        if new_offset != offset
+            && let Some(day) = self.get_day(new_offset)
+        {
+            self.table_offset_date = day.date;
         }
 
         let _ = self.load_data_at_threshold(new_cursor);
@@ -273,7 +273,6 @@ impl RunningData {
 
 pub struct SetupData {
     pub query: String,
-    pub cursor: usize,
     pub results: Vec<(i64, String, String, String)>,
     pub selected: usize,
     pub last_input: Option<Instant>,
@@ -311,7 +310,6 @@ impl Default for SetupData {
         let config_path = get_config_path().expect("failed to get config path");
         Self {
             query: String::new(),
-            cursor: 0,
             results: Vec::new(),
             selected: 0,
             last_input: None,
@@ -323,7 +321,7 @@ impl Default for SetupData {
 }
 
 pub enum AppState {
-    Running(RunningData),
+    Running(Box<RunningData>),
     Setup(SetupData),
     Error(ErrorType),
 }
@@ -351,7 +349,7 @@ impl App {
 
         let state = match load_config::<UserData>(&file_path) {
             Ok(data) => match RunningData::new(data) {
-                Ok(running) => AppState::Running(running),
+                Ok(running) => AppState::Running(Box::new(running)),
                 Err(e) => AppState::Error(e),
             },
             Err(ErrorType::ConfigFileNotFound) => AppState::Setup(SetupData::default()),

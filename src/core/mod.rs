@@ -10,6 +10,7 @@ pub mod storage;
 pub mod time;
 pub mod types;
 
+#[expect(dead_code)]
 pub fn init_core() {
     let _path = Path::new("/mnt/workspace/Projects/awqat/data/trash/trash.json");
     let config = get_config_path().unwrap();

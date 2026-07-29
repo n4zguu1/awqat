@@ -453,6 +453,7 @@ impl RunningData {
         frame.render_widget(Paragraph::new(help), area);
     }
 
+    #[expect(dead_code)]
     fn next_prayer_index(&self) -> Option<usize> {
         let now = self.date_time.time();
         let times = [

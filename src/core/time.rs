@@ -39,6 +39,7 @@ impl Display for DayPrayers {
 }
 #[derive(Debug)]
 pub struct NextPrayer {
+    #[expect(dead_code)]
     pub time: DateTime<Tz>,
     pub prayer: DayPrayers,
     pub remaining: TimeDelta,
@@ -285,7 +286,6 @@ impl UserData {
         calendar_prayer_times.months.pop_back();
         Ok(())
     }
-    pub fn calculate_with_angles() {}
 }
 
 pub fn time_with_offset(

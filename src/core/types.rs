@@ -25,6 +25,7 @@ pub enum Madhab {
     Shafi,
 }
 impl Madhab {
+    #[expect(dead_code)]
     pub fn from_crate(m: &MadhabCrate) -> Self {
         match m {
             MadhabCrate::Hanafi => Madhab::Hanafi,
@@ -55,6 +56,7 @@ pub enum Method {
     Other,
 }
 impl Method {
+    #[expect(dead_code)]
     fn from_crate(m: &MethodCrate) -> Self {
         match m {
             MethodCrate::MuslimWorldLeague => Method::MuslimWorldLeague,
@@ -173,6 +175,7 @@ impl Timezone {
     pub fn new(offset: i64) -> Self {
         Timezone { utc_offset: offset }
     }
+    #[expect(dead_code)]
     pub fn to_utc_format(&self) -> String {
         let is_negative = self.utc_offset < 0;
         let abs_offset_seconds = self.utc_offset.abs();
