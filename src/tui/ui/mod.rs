@@ -5,6 +5,9 @@ use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, BorderType, Borders, Clear, Paragraph};
 
+const MIN_WIDTH: u16 = 98;
+const MIN_HEIGHT: u16 = 31;
+
 pub mod running;
 pub mod setup;
 
@@ -40,6 +43,11 @@ fn format_gmt(offset_seconds: i64) -> String {
 
 impl App {
     pub fn draw(&mut self, frame: &mut Frame) {
+        let area = frame.area();
+        if area.width < MIN_WIDTH || area.height < MIN_HEIGHT {
+            Self::draw_min_size_warning(frame, area.width, area.height);
+            return;
+        }
         match &mut self.state {
             AppState::Running(data) => {
                 data.draw(frame);
@@ -50,6 +58,50 @@ impl App {
             AppState::Setup(data) => data.draw(frame),
             AppState::Error(e) => Self::draw_error(frame, e),
         }
+    }
+
+    fn draw_min_size_warning(frame: &mut Frame, w: u16, h: u16) {
+        let area = frame.area();
+
+        let block = Block::default()
+            .title(" ⚠ Terminal Too Small ")
+            .title_alignment(Alignment::Center)
+            .borders(Borders::ALL)
+            .border_type(BorderType::Rounded)
+            .border_style(Style::default().fg(theme::GOLD));
+
+        let msg = Paragraph::new(vec![
+            Line::from(Span::styled(
+                format!(" Minimum: {MIN_WIDTH} x {MIN_HEIGHT} "),
+                Style::default()
+                    .fg(theme::TEXT_PRIMARY)
+                    .add_modifier(Modifier::BOLD),
+            ))
+                .alignment(Alignment::Center),
+            Line::from(Span::styled(
+                format!(" Current: {w} x {h} "),
+                Style::default().fg(theme::RED).add_modifier(Modifier::BOLD),
+            ))
+                .alignment(Alignment::Center),
+            Line::from(""),
+            Line::from(Span::styled(
+                " Please enlarge the terminal window ",
+                Style::default().fg(theme::TEXT_MUTED),
+            ))
+                .alignment(Alignment::Center),
+        ])
+            .block(block)
+            .alignment(Alignment::Center);
+
+        let centered = Rect {
+            x: area.x + area.width.saturating_sub(MIN_WIDTH) / 2,
+            y: area.y + area.height.saturating_sub(7) / 2,
+            width: MIN_WIDTH.min(area.width),
+            height: 7.min(area.height),
+        };
+
+        frame.render_widget(Clear, area);
+        frame.render_widget(msg, centered);
     }
 
     fn draw_error(frame: &mut Frame, e: &crate::error::ErrorType) {
