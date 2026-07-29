@@ -25,7 +25,6 @@ pub enum Madhab {
     Shafi,
 }
 impl Madhab {
-    #[allow(dead_code)]
     pub fn from_crate(m: &MadhabCrate) -> Self {
         match m {
             MadhabCrate::Hanafi => Madhab::Hanafi,
@@ -56,8 +55,7 @@ pub enum Method {
     Other,
 }
 impl Method {
-    #[allow(dead_code)]
-    pub fn from_crate(m: &MethodCrate) -> Self {
+    fn from_crate(m: &MethodCrate) -> Self {
         match m {
             MethodCrate::MuslimWorldLeague => Method::MuslimWorldLeague,
             MethodCrate::Egyptian => Method::Egyptian,
@@ -74,7 +72,7 @@ impl Method {
             MethodCrate::Other => Method::Other,
         }
     }
-    pub fn to_crate(&self) -> MethodCrate {
+    pub(crate) fn to_crate(&self) -> MethodCrate {
         match self {
             Method::MuslimWorldLeague => MethodCrate::MuslimWorldLeague,
             Method::Egyptian => MethodCrate::Egyptian,
@@ -175,7 +173,6 @@ impl Timezone {
     pub fn new(offset: i64) -> Self {
         Timezone { utc_offset: offset }
     }
-    #[allow(dead_code)]
     pub fn to_utc_format(&self) -> String {
         let is_negative = self.utc_offset < 0;
         let abs_offset_seconds = self.utc_offset.abs();
@@ -204,8 +201,6 @@ impl UserData {
     }
 }
 
-#[allow(dead_code)]
-pub struct Config {}
 #[cfg(test)]
 mod tests {
     use crate::core::types::Timezone;

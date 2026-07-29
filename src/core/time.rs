@@ -1,19 +1,19 @@
 // handle all logic related to time unit
 
 use crate::core::date::NaiveHijriDate;
-use crate::core::types::{Method, UserData};
+use crate::core::types::{Coordinates, Method, UserData};
 use crate::error::ErrorType;
-use chrono::{DateTime, Datelike, Days, Local, Month, Months, NaiveDate, TimeDelta, Utc};
+use chrono::{DateTime, Datelike, Days, Month, Months, NaiveDate, TimeDelta, Utc};
+use chrono_tz::Tz;
 use salah::Prayer::{Asr, Dhuhr, Fajr, FajrTomorrow, Isha, Maghrib, Sunrise};
 use salah::{Configuration, PrayerSchedule, TimeAdjustment};
-use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
 use std::fmt::{Display, Formatter};
 
 // preload should be even for keep the anchor month in center and better UX
 const MONTHS_PRELOAD: u32 = 4;
-#[derive(Debug)]
 
+#[derive(Debug)]
 pub enum DayPrayers {
     Fajr,
     Sunrise,
@@ -39,24 +39,24 @@ impl Display for DayPrayers {
 }
 #[derive(Debug)]
 pub struct NextPrayer {
-    pub prayer_time: DateTime<Utc>,
+    pub time: DateTime<Tz>,
     pub prayer: DayPrayers,
     pub remaining: TimeDelta,
 }
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub struct DayPrayerTimes {
     pub date: NaiveDate,
     pub hijri: NaiveHijriDate,
-    pub fajr: DateTime<Utc>,
-    pub sunrise: DateTime<Utc>,
-    pub dhuhr: DateTime<Utc>,
-    pub asr: DateTime<Utc>,
-    pub maghrib: DateTime<Utc>,
-    pub isha: DateTime<Utc>,
-    pub fajr_tomorrow: DateTime<Utc>,
+    pub fajr: DateTime<Tz>,
+    pub sunrise: DateTime<Tz>,
+    pub dhuhr: DateTime<Tz>,
+    pub asr: DateTime<Tz>,
+    pub maghrib: DateTime<Tz>,
+    pub isha: DateTime<Tz>,
+    pub fajr_tomorrow: DateTime<Tz>,
 }
 impl DayPrayerTimes {
-    fn time(&self, prayer: &DayPrayers) -> DateTime<Utc> {
+    fn time(&self, prayer: &DayPrayers) -> DateTime<Tz> {
         match prayer {
             DayPrayers::Fajr => self.fajr,
             DayPrayers::Sunrise => self.sunrise,
@@ -68,7 +68,7 @@ impl DayPrayerTimes {
         }
     }
 
-    pub fn next_prayer(&self, time: &DateTime<Utc>) -> NextPrayer {
+    pub fn next_prayer(&self, time: &DateTime<Tz>) -> NextPrayer {
         let next = if self.time(&DayPrayers::Fajr) >= *time {
             DayPrayers::Fajr
         } else if self.time(&DayPrayers::Sunrise) >= *time {
@@ -90,59 +90,21 @@ impl DayPrayerTimes {
         let remaining = *time - next_prayer_time;
         NextPrayer {
             prayer: next,
-            prayer_time: next_prayer_time,
+            time: next_prayer_time,
             remaining,
         }
     }
 }
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub struct MonthPrayerTimes {
     pub days: Vec<DayPrayerTimes>,
     pub date: NaiveDate,
 }
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub struct CalendarPrayerTimes {
     pub months: VecDeque<MonthPrayerTimes>,
 }
-
-impl DayPrayerTimes {
-    pub fn as_string_with_timezone(&self) -> [String; 8] {
-        let date = self.date.to_string();
-        let hijri = self.hijri.to_string();
-        let fajr = self
-            .fajr
-            .with_timezone(&Local)
-            .format("%I:%M %p")
-            .to_string();
-        let sunrise = self
-            .sunrise
-            .with_timezone(&Local)
-            .format("%I:%M %p")
-            .to_string();
-        let dhuhr = self
-            .dhuhr
-            .with_timezone(&Local)
-            .format("%I:%M %p")
-            .to_string();
-        let asr = self
-            .asr
-            .with_timezone(&Local)
-            .format("%I:%M %p")
-            .to_string();
-        let maghrib = self
-            .maghrib
-            .with_timezone(&Local)
-            .format("%I:%M %p")
-            .to_string();
-        let isha = self
-            .isha
-            .with_timezone(&Local)
-            .format("%I:%M %p")
-            .to_string();
-
-        [date, hijri, fajr, sunrise, dhuhr, asr, maghrib, isha]
-    }
-}
+impl DayPrayerTimes {}
 
 impl UserData {
     // handle the specific cases
@@ -182,13 +144,41 @@ impl UserData {
             .for_location(location)
             .calculate()
             .map_err(ErrorType::CalculatingPrayerTimesFailed)?;
-        let fajr = prayers.time(Fajr);
-        let sunrise = prayers.time(Sunrise);
-        let dhuhr = prayers.time(Dhuhr);
-        let asr = prayers.time(Asr);
-        let maghrib = prayers.time(Maghrib);
-        let isha = prayers.time(Isha);
-        let fajr_tomorrow = prayers.time(FajrTomorrow);
+        let fajr = time_with_offset(
+            &self.city.coordinates,
+            self.city.timezone.utc_offset,
+            prayers.time(Fajr),
+        );
+        let sunrise = time_with_offset(
+            &self.city.coordinates,
+            self.city.timezone.utc_offset,
+            prayers.time(Sunrise),
+        );
+        let dhuhr = time_with_offset(
+            &self.city.coordinates,
+            self.city.timezone.utc_offset,
+            prayers.time(Dhuhr),
+        );
+        let asr = time_with_offset(
+            &self.city.coordinates,
+            self.city.timezone.utc_offset,
+            prayers.time(Asr),
+        );
+        let maghrib = time_with_offset(
+            &self.city.coordinates,
+            self.city.timezone.utc_offset,
+            prayers.time(Maghrib),
+        );
+        let isha = time_with_offset(
+            &self.city.coordinates,
+            self.city.timezone.utc_offset,
+            prayers.time(Isha),
+        );
+        let fajr_tomorrow = time_with_offset(
+            &self.city.coordinates,
+            self.city.timezone.utc_offset,
+            prayers.time(FajrTomorrow),
+        );
 
         Ok(DayPrayerTimes {
             date: *naive_date,
@@ -295,6 +285,78 @@ impl UserData {
         calendar_prayer_times.months.pop_back();
         Ok(())
     }
-    #[allow(dead_code)]
     pub fn calculate_with_angles() {}
+}
+
+pub fn time_with_offset(
+    coordinates: &Coordinates,
+    offset: i64,
+    date_time: DateTime<Utc>,
+) -> DateTime<Tz> {
+    // 1. Try looking up and parsing the IANA timezone
+    let calculated_time = tz_search::lookup(coordinates.latitude, coordinates.longitude)
+        .and_then(|tz_str| tz_str.parse::<Tz>().ok())
+        .map(|tz| date_time.with_timezone(&tz));
+
+    // 2. Fallback: Parse fixed offset or apply static seconds
+    calculated_time.unwrap_or_else(|| {
+        // Apply the static seconds offset to UTC
+        let shifted_utc = date_time
+            .checked_add_signed(TimeDelta::seconds(offset))
+            .unwrap_or(date_time);
+
+        // Represent the shifted time as UTC (or convert to FixedOffset)
+        shifted_utc.with_timezone(&Tz::UTC)
+    })
+}
+
+#[cfg(test)]
+mod test {
+    use crate::core::time::time_with_offset;
+    use crate::core::types::{
+        City, Coordinates, Country, Madhab, Method, Region, Timezone, UserData,
+    };
+    use chrono::Utc;
+    use chrono_tz::Tz;
+
+    #[test]
+    fn check_time_with_offset_in_different_timezones() {
+        let country = Country::new(
+            "PS".to_string(),
+            "Palestine".to_string(),
+            Madhab::Hanafi,
+            Method::MuslimWorldLeague,
+        );
+        let city = City::new(
+            "tel aviv".to_string(),
+            Coordinates::new(36.16525, 1.33452),
+            Timezone::new(3600),
+        );
+        let region = Region::new("chlef".to_string());
+        let data = UserData::new(country, region, city);
+        let _time = time_with_offset(
+            &data.city.coordinates,
+            data.city.timezone.utc_offset,
+            Utc::now(),
+        );
+
+        let coordinates = Coordinates::new(32.08088, 34.78057);
+        let calculated_time = tz_search::lookup(coordinates.latitude, coordinates.longitude)
+            .and_then(|tz_str| tz_str.parse::<Tz>().ok())
+            .and_then(|tz| {
+                // Interpret the wall-clock time in the local timezone (respects DST)
+                Utc::now()
+                    .naive_utc()
+                    .and_local_timezone(tz)
+                    .latest() // Handles DST transitions safely
+                    .map(|local_dt| local_dt.with_timezone(&Utc))
+            });
+        let timzone = tz_search::lookup(coordinates.latitude, coordinates.longitude).unwrap();
+        let timezone = timzone.parse::<Tz>().unwrap();
+        let time = Utc::now().with_timezone(&timezone);
+        println!("{:?}", calculated_time);
+        println!("{:?}", time);
+        println!("{:?}", data.city.name);
+        println!("{:?}", time);
+    }
 }

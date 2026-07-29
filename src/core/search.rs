@@ -16,7 +16,6 @@ use std::collections::HashMap;
 // the overhead it cuzes is it doubles down the binary size
 // slower writes and updates, cuz each update the table needs to update too
 
-#[allow(dead_code)]
 pub fn search_city(conn: &Connection, name: &str) -> Result<HashMap<i64, String>, ErrorType> {
     let query = "select rowid,name from cities_fts where name match ?1";
     let mut statement = conn
