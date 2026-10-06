@@ -1712,8 +1712,7 @@ checksum = "9774ba4a74de5f7b1c1451ed6cd5285a32eddb5cccb8cc655a4e50009e06477f"
 [[package]]
 name = "salah"
 version = "0.7.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "04af71d94fdd3fb168cac15a85b2cc89ef8a3518206294cdb4bb923a885c5738"
+source = "git+https://github.com/n4zguu1/salah.git?branch=n4zguu1-add-rich-docs#46f79652278955320708ca3bf3ed96098ff2f258"
 dependencies = [
  "chrono",
 ]

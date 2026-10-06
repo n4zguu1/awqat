@@ -11,10 +11,10 @@ directories = "6.0.0"
 icu_calendar = "2.2.1"
 ratatui = "0.30.2"
 rusqlite = { version = "0.40.1", features = ["bundled"] }
-salah = "0.7.6"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.150"
 thiserror = "2.0.18"
 tui-big-text = "0.8.8"
 tz-search = "0.1.1"
 chrono-tz = { version = "0.10.4", features = ["serde"] }
+salah = { git = "https://github.com/n4zguu1/salah.git", branch = "n4zguu1-add-rich-docs" }

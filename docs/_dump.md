@@ -17,7 +17,7 @@
 - shortcuts of mostly used functions
 - multilingual
 - display weather information,
-- hyperland trays, displays the next prayer remaining time
+- Hyperland trays, displays the next prayer remaining time
 
 # user flow
 
