@@ -1,7 +1,7 @@
-# ADR 0001: Initial Hijri date strategy
+# Initial Hijri date strategy
 
-- Status: Accepted
-- Date: 2026-10-06
+- **Status:** Accepted
+- **Date:** 2026-10-06
 
 ## Context
 

@@ -1,87 +1,76 @@
 # Prayer times
 
-## goal
+## Goal
 
-shows today's prayer times and identify the next upcoming prayer
+Show today's prayer times and identify the next upcoming prayer.
 
-## research
+## Background
 
-the core factor that define a prayer times is solar elevation in angle (the angular height of the sun above the local
-horizon, ranging from 0° at sunrise or sunset to 90° when directly overhead).
-so to calculate this programmatically, algorithms take four core inputs:
+Prayer times are based on the Sun's elevation above the local horizon, ranging
+from 0° at sunrise or sunset to 90° when directly overhead. The calculation
+uses four core inputs:
 
-- coordinates: latitude, and longitude
-- Declination of the Sun ($\delta$): The angle between the rays of the Sun and the plane of the Earth's equator (changes
-  daily).
-- Equation of Time ($EoT$): An offset that accounts for the eccentricity of Earth's orbit and tilt, compensating for the
-  difference between solar time and standard clock time.
-- Calculation Method Conventions: Different regions
+- Coordinates: latitude and longitude.
+- Solar declination: the angle between the Sun's rays and the Earth's
+  equatorial plane, which changes daily.
+- Equation of time: an offset that accounts for the Earth's orbital eccentricity
+  and axial tilt.
+- Calculation-method conventions: regional choices for twilight angles and
+  fixed offsets.
 
-> **why there is calculation methods**
-> The different methods exist because Islamic authorities digitized classical visual observations of twilight into fixed
-> solar angles ($12^\circ$ to $19.5^\circ$) to provide consistent, automated schedules that account for regional
-> atmospheric baselines and latitude differences.
->
-> ---
->
-> Each country or regional ministry adopts a specific astronomical parameter—either designing its own official system or
-> aligning with major global standards (such as the *Muslim World League*, *Umm al-Qura*, *Egyptian General Authority*,
-> or
-> *ISNA*).
->
-> ---
->
-> **special cases**
->
-> 1. **Extreme High Latitudes (Polar & Near-Polar Regions):**
->    * **The Problem:** Above $\approx 48^\circ$ N/S in summer, the sun stays close to the horizon all night and never
-       drops below the required $15^\circ$ or $18^\circ$ threshold. The trigonometric
-       term $\cos H = \frac{\sin (-\alpha) - \sin\phi \cdot \sin\delta}{\cos\phi \cdot \cos\delta}$ results in a value
-       outside $[-1, 1]$, making $\arccos$ mathematically undefined (no real solution).
->    * **The Solution:** Calculation engines switch to rule-based fallback approximations:
->      * **Nearest Latitude:** Clamps the latitude calculation to a reference parallel (e.g., $45^\circ$ or $48^\circ$).
->      * **Middle of the Night ($Nisf\ al-Layl$):** Sets the end of Isha and start of Fajr at the exact midpoint between
-         Sunset and Sunrise.
->      * **One-Seventh of the Night ($Sub'a\ al-Layl$):** Allocates the final $1/7^{\text{th}}$ of total nighttime for
-         Fajr and the first $1/7^{\text{th}}$ for Isha.
->      * **Nearest City:** Uses the exact prayer timetable of the closest city where solar angles remain valid.
->
-> 2. **High Altitude & Atmospheric Refraction:**
->    * **Elevation Differences:** At high altitudes (e.g., mountains or tall structures like the Abraj Al Bait in
-       Makkah), the observer sees the horizon lower than someone at sea level (dip of the horizon). This shifts Sunset
-       ($Maghrib$) and Sunrise ($Shorooq$) by several minutes.
->    * **Standard Refraction Allowance:** Standard algorithms apply a constant $-0.833^\circ$ adjustment at the horizon
-       ($0.533^\circ$ for the sun’s semi-diameter + $0.30^\circ$ for atmospheric light bending at sea level).
->
-> 3. **Fixed Minute Offsets (Custom Rule Models):**
->    * **Fixed Isha Window:** Standard angle formulas are overridden in certain systems. For instance, the **Umm
-       al-Qura** authority defines Isha not by an angle, but as a fixed **90-minute offset** after Maghrib (extended to
-       **120 minutes** during Ramadan).
->    * **Safety Buffers ($Ihtiyat$):** Many national ministries add $2$ to $5$ manual padding minutes to Dhuhr (to
-       ensure the sun has completely passed the meridian) or Maghrib (to guarantee total solar immersion).
+Different authorities use different twilight angles, generally between 12° and
+19.5°, or fixed offsets. Common conventions include the Muslim World League,
+Umm al-Qura, the Egyptian General Authority, and ISNA.
 
-## calculation
+## Special cases
 
-salah crate handle most of the calculations for us
+### Extreme latitudes
 
-### inputs
+At high latitudes, the Sun may not reach the angle required for Fajr or Isha.
+The corresponding trigonometric solution is then outside the valid range for
+`acos`. Calculation engines can use fallback rules:
 
-- latitude
-- longitude
-- madhab
-- method
-- high latitude rule (solves the case nbr 1)
-- isha interval
-- timezone
+- **Nearest latitude** — Clamp the calculation to a reference latitude such as
+  45° or 48°.
+- **Middle of the night** — Set Fajr and Isha relative to the midpoint of the
+  night.
+- **One-seventh of the night** — Allocate the first and last seventh of the
+  night to Isha and Fajr.
+- **Nearest city** — Use a timetable from the nearest city where the angles
+  remain valid.
 
-### output
+### Altitude and refraction
 
-- fajr prayer time
-- sunrise
-- duhr
-- asr
-- maghrib
-- ishaa
-- next prayer and remaining time 
+At high altitudes, the visible horizon is lower than at sea level. Standard
+algorithms account for this with a horizon adjustment of approximately -0.833°,
+including solar semi-diameter and atmospheric refraction.
 
+### Fixed offsets
 
+Some methods define Isha as a fixed interval after Maghrib rather than an
+angle. For example, Umm al-Qura uses 90 minutes after Maghrib, extended to
+120 minutes during Ramadan. Authorities may also apply safety buffers of two
+to five minutes to Dhuhr or Maghrib.
+
+## Calculation
+
+The `salah` crate performs most of the astronomical calculations.
+
+### Inputs
+
+- Latitude and longitude.
+- Madhab.
+- Calculation method.
+- High-latitude rule.
+- Isha interval, when applicable.
+- Timezone.
+
+### Outputs
+
+- Fajr.
+- Sunrise.
+- Dhuhr.
+- Asr.
+- Maghrib.
+- Isha.
+- The next prayer and remaining time.

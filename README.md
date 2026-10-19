@@ -1,6 +1,7 @@
-# awqat
+# Awqat
 
-A Rust terminal application for prayer times (`awqat` = "times"), with local data storage and a TUI interface.
+Awqat (`awqat` means “times”) is a Rust terminal application for prayer
+times, with local data storage and a TUI interface.
 
 ## Features
 
@@ -19,16 +20,15 @@ A Rust terminal application for prayer times (`awqat` = "times"), with local dat
 - **Date/Time:** `chrono`, `chrono-tz`, `icu_calendar`, `tz-search`
 - **Domain logic:** `salah`
 
-## Project Structure
+## Project structure
 
 - `src/` — main source code
-- `core/` — core logic and types
-- `tui/` — terminal interface app code
-- `tray/` — tray-related components
+- `src/core/` — core logic and types
+- `src/tui/` — terminal interface app code
+- `src/tray/` — tray-related components
 - `data/` — dataset files
 - `assets/` — static assets
 - `docs/` — documentation
-- `exmamples/` — examples (note: directory name is currently `exmamples`)
 - `todo.md` — development notes and roadmap
 
 ## Getting Started
@@ -49,9 +49,10 @@ cargo build
 cargo run
 ```
 
-## Development Notes
+## Development notes
 
-Current progress and planned improvements are tracked in [`todo.md`](./todo.md), including:
+Current progress and planned improvements are tracked in
+[`todo.md`](./todo.md), including:
 
 - Data quality improvements for city-level precision
 - Better nearest-city heuristics in search results

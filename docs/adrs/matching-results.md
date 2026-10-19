@@ -1,12 +1,13 @@
-### Matching Results
+# Show context for city matches
 
-### status: accepted
+- **Status:** Accepted
 
-### context
+## Context
 
-we have a database contains city names. cities can be duplicated acroos the countries, but city name cant be duplicated
-in the same region.
+City names may be duplicated across countries and regions, even when they are
+unique within a region.
 
-### decision
+## Decision
 
-provide the user with a list of cities showing the city name, region and country. 
+Show the city name together with its region and country in search results so
+the user can select the intended city.

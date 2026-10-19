@@ -1,8 +1,14 @@
-# methods and madhabs rules
+# Select default methods and madhabs
 
-## context
+- **Status:** Accepted
 
-in the muslim countries there is central goverment that dictates what methods and madhab to calculate times. but in
-non-muslim countries, or countries that have multiple madhabs. what should we decide as default
+## Context
 
-## decision: default to madhab and method based on large groups. with option to change them in settings
+Some countries have a central authority that determines the default
+calculation method and madhab. Other countries have multiple communities or no
+single official convention.
+
+## Decision
+
+Choose defaults based on the largest relevant local group and allow the user
+to change the method and madhab in settings.

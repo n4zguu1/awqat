@@ -1,12 +1,14 @@
-# Data: Hardcoded vs. Database
+# Store data in a database
 
-## status: accepted
+- **Status:** Accepted
 
-## context
+## Context
 
-do we need to hardcode all all the data in the app or do we need to use a db.
+The application needs a large city dataset and regular data updates.
+Hardcoding every record would make updates difficult and increase maintenance
+cost.
 
-## decision
+## Decision
 
-dues to the large amount of ciites and we need to reudce tech dept when updating the data, we will use DB. with extra
-handling of how do we bundle it with the app and how do we update it when needed.
+Store the dataset in a database. Database bundling and update behavior are
+defined in [Bundle and update the database](./bundle-and-update-db.md).

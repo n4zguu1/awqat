@@ -1,17 +1,18 @@
-# gathering_data.md
+# Gather data from multiple sources
 
-### Status:
+- **Status:** Proposed
 
-### context
+## Context
 
-we have variation in the data we want, we arent gonna find it in one place, we need to gather it from multiple sources,
-and we need to make sure its accurate and up to date.
+The required city and calculation data is not available from one source.
+Sources must be combined, normalized, and checked for accuracy.
 
-### plan
+## Plan
 
-- largest city dataset
-  found [here](https://hub.huwise.com/explore/assets/geonames-all-cities-with-a-population-1000/view/). contains
-  timezone, coordinates, city name, alternate city name, country name. it need transfer phase to emit the boilerplate.
-- salah crate supports fixed set of methods/madhabs. if turned out some countries use separate ways, we fall back into
-  angle calculations
-
+- Start with a large city dataset such as
+  [GeoNames cities with a population over 1,000](https://hub.huwise.com/explore/assets/geonames-all-cities-with-a-population-1000/view/).
+- Import timezone, coordinates, city names, alternative names, regions, and
+  country information into the bundled dataset.
+- Use the methods and madhabs supported by the `salah` crate.
+- Fall back to angle-based calculations when a country's convention is not
+  directly represented.

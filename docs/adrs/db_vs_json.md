@@ -1,11 +1,13 @@
-# database or json
+# Use a database instead of JSON
 
-## status: accepted
+- **Status:** Accepted
 
-## context
+## Context
 
-what form do we store our dataset.
+The dataset needs efficient lookup and flexible search across many cities.
 
-## decision : DB
+## Decision
 
-since database is much faster then json. and we need advances search mechanism, so the clear path is db 
+Use a database rather than JSON. A database provides indexed lookups and
+search capabilities without requiring the application to load the entire
+dataset into memory.
