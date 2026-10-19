@@ -1,13 +1,38 @@
-# milestones
+## Roadmap
+
+### Initial release
+
+- Select and persist a city.
+- Display Gregorian and Hijri dates.
+- Display today's prayer times.
+- Display the next prayer.
+- Support Linux terminals.
+
+### Next release
+
+- Windows support.
+- Scrollable prayer calendar.
+- Manual Hijri correction.
+- Themes and 12/24-hour display.
+- Notifications.
+
+### Later
+
+- Multiple languages.
+- Islamic special dates.
+- Weather information.
+- Animated sun view.
+- Network-backed Hijri updates.
+
+## milestones
 
 ### M0: gather data
 
 ### M1: Core library Development
 
-* Delivers : All calculations and data our app needs
+* Delivers : All calculations and data our app needs **issues**:
 
-#### issues:
-- 
+-
 
 ### M2: CLI interface
 
