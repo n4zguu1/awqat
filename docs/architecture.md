@@ -26,4 +26,3 @@
 | 4           | `ishaa_value`        | either angle value or offset value                                                   |
 | 5           | `ramadan_offset`     | if zero we follow same issha value. or we change ishaa offset in this specific month |
 
-

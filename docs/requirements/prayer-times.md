@@ -84,3 +84,4 @@ salah crate handle most of the calculations for us
 - ishaa
 - next prayer and remaining time 
 
+
