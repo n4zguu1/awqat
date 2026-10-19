@@ -1,28 +1,25 @@
 ## Roadmap
 
-### Initial release
+### roadmap
 
-- Select and persist a city.
-- Display Gregorian and Hijri dates.
-- Display today's prayer times.
-- Display the next prayer.
-- Support Linux terminals.
-
-### Next release
-
-- Windows support.
-- Scrollable prayer calendar.
-- Manual Hijri correction.
-- Themes and 12/24-hour display.
-- Notifications.
-
-### Later
-
-- Multiple languages.
-- Islamic special dates.
-- Weather information.
-- Animated sun view.
-- Network-backed Hijri updates.
+1. **v1**
+   * display times and dates in both hijri and gregorian
+   * configuration file
+   * location selection
+   * next prayer
+   * support all methods and madhabs
+   * support both terminals
+2. **v2**
+   * scrollable times table
+   * notification
+   * weather integration
+   * hyperland trays
+3. **v3**
+   * Islamic events
+   * azkar notifications
+   * sun angle ui
+   * automatic hijri date updates
+   * multilingual support (LTR langs)
 
 ## milestones
 
@@ -30,9 +27,15 @@
 
 ### M1: Core library Development
 
-* Delivers : All calculations and data our app needs **issues**:
+* Delivers : All calculations and data our app needs.
 
--
+**issues**
+
+- prayer times: day/month
+- next prayer time: same day/next day
+- hijri date/gregorian date
+- time
+- country/city/timezone
 
 ### M2: CLI interface
 

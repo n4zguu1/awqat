@@ -26,10 +26,9 @@
 | 4           | `ishaa_value`        | either angle value or offset value                                                   |
 | 5           | `ramadan_offset`     | if zero we follow same issha value. or we change ishaa offset in this specific month |
 
-### core lib apis: data that need to expose to interface
+## codebase
 
-- prayer times: day/month
-- next prayer time: same day/next day
-- hijri date/gregorian date
-- time
-- country/city/
+codebase will be have those two main dirs:
+
+- core where all connections/calculations/embeddings/io handled
+- tui where everything related to ui handled. 

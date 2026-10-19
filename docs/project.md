@@ -39,26 +39,6 @@ Awqat solves this issue.
 - display weather information,
 - Hyperland trays, displays the next prayer remaining time
 
-## roadmap
-
-1. **v1**
-    * display times and dates in both hijri and gregorian
-    * configuration file
-    * location selection
-    * next prayer
-    * support all methods and madhabs
-    * support both terminals
-2. **v2**
-    * scrollable times table
-    * notification
-    * weather integration
-    * hyperland trays
-3. **v3**
-    * Islamic events
-    * azkar notifications
-    * sun angle ui
-    * automatic hijri date updates
-    * multilingual support (LTR langs)
 
 -------------------------------------- raw thoughts --------------------------------------------------------------------
 
