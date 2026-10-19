@@ -1,35 +1,28 @@
-# Calculate on Open vs. One Config File
+# Calculate on open
 
-## status: proposed
+- **Status:** Accepted
 
-## context
+## Context
 
-do we save the calculated prayer times in a config file or do we calculate them every time the app opens.
-we need to consider the trade-offs between performance, accuracy, and user experience.
+Prayer times could be saved in a configuration file or recalculated whenever
+the application opens. The choice affects accuracy, startup time, daylight
+saving transitions, and implementation complexity.
 
-## decision
+## Options considered
 
-### Option 1: Calculate on Open
+### Calculate on open
 
-- **Pros:**
-  - Always provides the most accurate prayer times based on the current date and location.
-  - No need to manage a config file for prayer times, reducing complexity.
-  - no extra storage is needed for prayer times, as they are calculated on-the-fly.
+- Always uses the current date, location, and timezone.
+- Avoids stale prayer-time data and an additional file format.
+- Adds a small amount of work to application startup.
 
-- **Cons:**
-  - Slightly slower app startup time, as calculations are performed each time the app opens.
-  - Requires access to location services and date/time information every time the app is opened.
+### Save a pre-calculated schedule
 
-### Option 2: One Config File
+- Could reduce startup calculation time.
+- Could become stale when the date, timezone, or daylight-saving rules change.
+- Adds file I/O and schedule invalidation logic.
 
-- **Pros:**
-  - Faster app startup time, as prayer times are read from a pre-calculated config file.
-  - Reduces the need for repeated calculations, which can be beneficial for devices with limited processing power.
-  - Can work offline if the config file is already present.
-- **Cons:**
-  - Prayer times may become outdated if the config file is not updated regularly.
-  - transition between summer and winter time may not be reflected if the config file is not handled properly.
-  - extra i/o operations.
+## Decision
 
-decision: We will go with **Option 1: Calculate on Open**. due to high speed modern devices, the performance impact is
-negligible. 
+Calculate prayer times when the application opens. The performance cost is
+negligible on modern devices, and recalculation keeps the result current.

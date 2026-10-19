@@ -1,114 +1,74 @@
 # Awqat
 
-A TUI based application for helping Muslims track prayer times.
+Awqat is a terminal user interface (TUI) application that helps Muslims track
+prayer times while working at a computer.
 
-## Primary usage
+## Goals and principles
 
-A person who wants to never pass prayers, when working on computer , instead of each time manually searching the web.
-Awqat solves this issue.
+- Calculate prayer times locally.
+- Keep configuration recoverable.
+- Work offline by default.
 
-## Platforms
+## Supported platforms
 
-- linux
-- windows
+- Linux
+- Windows
 
-## Project Principals
+## Planned features
 
-- True Local calculation of prayer times
-- Configuration must be recoverable
-- Local first application, works when no online connection
+### Core experience
 
-## features
+- Display Gregorian and Hijri dates.
+- Display the day's prayer times and the next prayer.
+- Select a city and show its location.
+- Support configurable calculation methods and madhabs.
+- Support 12-hour and 24-hour time formats.
 
-- display time and date in both Gregorian and Hijri
-- next prayer
-- day prayers and time
-- display times in mecca and Medina and Quds
-- support notifications in linux
-- option to display scrollable prayers in table
-    - also have some functionality like back to today if user scrolled too much.
-- select city
-- interactive animated view of the sun
-- since hijri dates are moon based, user can also update hijri date based on scheduled update option
-- display islamic special dates
-- parameters for changing 24-hour and 12-hour displaying or just a shortcut
-- supported on all terminals (windows and linux)
-- select theme, or adapt to system or default to emulator theme
-- shortcuts of mostly used functions
-- multilingual
-- display weather information,
-- Hyperland trays, displays the next prayer remaining time
+### Convenience features
 
+- Show prayer times for Makkah, Madinah, and Al-Quds.
+- Provide a scrollable prayer table with a way to return to today.
+- Display Islamic events.
+- Provide theme selection and system-theme adaptation.
+- Support keyboard shortcuts and multiple left-to-right languages.
+- Display weather information.
 
--------------------------------------- raw thoughts --------------------------------------------------------------------
+### Integrations
 
-# end user features
+- Provide notifications on Linux and Windows where supported.
+- Provide a Hyprland tray integration showing the time remaining until the next prayer.
+- Include an animated sun view.
 
-- display time and date in both Gregorian and Hijri
-- next prayer
-- day prayers and time
-- display times in mecca and medina and quds
-- support notifications in linux
-- option to display scrollable prayers in table
-    - also have some functionality like back to today if user scrolled too much.
-- select city
-- interactive animated view of the sun
-- since hijri dates are moon based, user can also update hijri date based on scheduled update option
-- display islamic special dates
-- parameters for changing 24-hour and 12-hour displaying or just a shortcut
-- supported on all terminals (windows and linux)
-- select theme, or adapt to system or default to emulator theme
-- shortcuts of mostly used functions
-- multilingual
-- display weather information,
-- Hyperland trays, displays the next prayer remaining time
+## User flow
 
-# user flow
+1. **Install** — The user chooses an automated setup script or manual download
+   and compilation.
+2. **Set up** — The first launch opens a setup screen where the user selects a
+   city and confirms the date.
+3. **Configure** — The user can change the city, Hijri correction, language,
+   notification settings, and prayer-time preferences.
+4. **Use** — Subsequent launches open directly on the main screen using the
+   saved configuration.
+5. **Quit** — The user can exit the application normally.
 
-- installation
-  user gets the choice for automated setup script, or download and compile manually.
-- setup
-  user runs the app by typing awqat in terminal, a setup screen opens for selecting city and confirms the date. clicks
-  okay the app displays the times and content
-- configure
-  if an automated script failed from fetching and updating hijri date, a popup shows for making user update the hijri
-  based on his local calculations.
-  user can update manually the date or city.
-  user can stop/start notification from app, also set enable/disable notifications for all prayer times, also can make
-  notification time interval depending on the prayer time
-- quit
-  user can quit the app
-- user can change the language
-- reopen
-  if user opens the application again, not city slection nothing, just displaying the times and main screen
+## Open questions
 
-# problems
+- Which data sources provide reliable Hijri dates?
+- Should the date browser be finite or effectively infinite?
+- How should automatic Hijri updates be scheduled?
+- How should regional variations, daylight saving time, and duplicated city
+  names be represented?
+- Which high-latitude rules should be available?
+- How should Windows key press, release, and hold behavior be handled?
+- Which languages can be supported reliably by terminal emulators?
+- Is continuous delivery worth the maintenance cost?
 
-- where do I get a reliable entry for hijri dates
-- is the scrollable area for dates finite or infinite
-- based on what I schedule the hijri updates, is the app context aware about the month or any reasonable anchor
-- the most valuable thing is the dataset, it should contain everything the app needs
-- many countries have different sets of time in different states
-- many countries have summer time (DST)
-- what about exceptions like the north pole where sun never goes up for long times? the calculation logic needs angles
-- the dataset needs to be accurate for satisfying as many users as I can
-- some people don't love install scripts
-- handle the city duplications
-- windows also can be handy in terms of terminal API. usually crossterm handles this, but details like key
-  press/release/hold need to take care of.
-- since we covering every city in the world, data shouldnt be hardcoded
-- arabic isnt supported in terminal emulators, only Latin langs
-- shoult the app have CD piplines? does it worth it?
+## Audience and distribution
 
-# user nature
+Awqat targets people who spend time in a terminal, especially Linux users.
+Windows users may need additional onboarding because TUIs are less familiar on
+that platform.
 
-- not so many Muslims are technical persons. the fact that it's a TUI app makes it have a small user base
-- windows users aren't familiar with TUIs as much as Linux users
-- expect Arabs to be the least percentage of the whole base
-
-# where to announce
-
-- reddit muslim tech communities (although you won't find much for these specifics)
-- facebook muslim tech groups
-- persons who announce other projects
-- news pages like facebook arab tech pages
+Potential distribution channels include Muslim technology communities on
+Reddit and Facebook, project announcement accounts, and Arabic technology news
+pages.

@@ -1,15 +1,15 @@
-# Database Requirements
+# Database requirements
 
-## goal
+## Goal
 
-what data do we need to prevent the tech dept
+Provide the data required to calculate prayer times without depending on a
+network connection.
 
-### data
+## Required data
 
-- all cities with their coordinates, region and country
-- timezone for each city
-- madhabs and methods for each city.
-- fajr and isha angles for each city.
-- high latitude rule for each city.
-- isha interval for each city.
-
+- Cities, coordinates, regions, and countries.
+- An IANA timezone for each city.
+- Default madhab and calculation method for each country or city.
+- Fajr and Isha angles where the selected method uses angles.
+- A high-latitude rule where normal angle calculations are unavailable.
+- An Isha interval where the selected method uses a fixed offset.

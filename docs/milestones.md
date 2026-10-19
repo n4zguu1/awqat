@@ -1,6 +1,4 @@
-## Roadmap
-
-### roadmap
+# Roadmap
 
 1. **v1**
    * display times and dates in both hijri and gregorian
@@ -21,28 +19,35 @@
    * automatic hijri date updates
    * multilingual support (LTR langs)
 
-## milestones
+## Milestones
 
-### M0: gather data
+### M0 — Gather data
 
-### M1: Core library Development
+Collect and normalize the city, country, timezone, and calculation-method data
+required by the application.
 
-* Delivers : All calculations and data our app needs.
+### M1 — Core library
 
-**issues**
+Deliver the calculations and data access required by the application:
 
-- prayer times: day/month
-- next prayer time: same day/next day
-- hijri date/gregorian date
-- time
-- country/city/timezone
+- Prayer times for a day and a month.
+- The next prayer for the current or following day.
+- Hijri and Gregorian dates.
+- Local time.
+- Country, city, and timezone information.
 
-### M2: CLI interface
+### M2 — TUI
 
-* Delivers: app interface and the binds with core lib
+Deliver the terminal interface and its integration with the core library.
 
-### M3: Notification Deomon
+### M3 — Notifications
 
-### M4: CD and update layer
+Deliver the notification daemon and its configuration.
 
-### Islamic events
+### M4 — Continuous delivery and updates
+
+Deliver release automation and the application update layer.
+
+### Future — Islamic events
+
+Add Islamic events and related calendar features.
